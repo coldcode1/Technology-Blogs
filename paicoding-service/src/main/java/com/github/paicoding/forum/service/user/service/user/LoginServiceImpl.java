@@ -71,6 +71,7 @@ public class LoginServiceImpl implements LoginService {
      */
     private Long registerOrGetUserInfo(UserSaveReq req) {
         UserDO user = userDao.getByThirdAccountId(req.getThirdAccountId());
+        log.info("测试");
         if (user == null) {
             return registerService.registerByWechat(req.getThirdAccountId());
         }
