@@ -7,7 +7,7 @@ view:
     host: https://paicoding.com
     welcomeInfo: 欢迎来到技术博客园，戳 <a href="/article/detail/155">技术派社区上线！</a> 了解我们
     contactMeStarQrCode: https://cdn.tobebetterjavaer.com/tobebetterjavaer/images/qiye-weixin.png
-    oss: https://cdn.tobebetterjavaer.com/paicoding/static
+    oss:
 
 knife4j:
   production: true # 开启屏蔽文档资源
