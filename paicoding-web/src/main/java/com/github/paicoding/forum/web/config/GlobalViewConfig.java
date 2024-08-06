@@ -19,7 +19,6 @@ public class GlobalViewConfig {
 
     private String websiteName;
 
-
     private String contactMeWxQrCode;
 
     private String contactMeStarQrCode;
