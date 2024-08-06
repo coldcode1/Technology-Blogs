@@ -4,8 +4,8 @@ view:
     contactMeWxQrCode: https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/wxImages/wxLoginImage.jpg
     pageSize: 20
     websiteRecord: 听风吟
-    host: https://paicoding.com
-    welcomeInfo: 欢迎来到技术博客园，戳 <a href="/article/detail/155">技术派社区上线！</a> 了解我们
+    host: https://www.baidu.com/
+    welcomeInfo: 欢迎来到技术博客园，这里是一个技术分享的平台。
     contactMeStarQrCode: https://cdn.tobebetterjavaer.com/tobebetterjavaer/images/qiye-weixin.png
     oss:
 

@@ -42,11 +42,13 @@
 
 <script>
   const img = document.getElementById("cover0")
-  // 服务器 cdn 开启跨域消息头
-  img.setAttribute('crossOrigin', '')
+  // Get all the images with IDs starting with 'cover'
+  const images = document.querySelectorAll('[id^="cover"]');
 
-  // https://lokeshdhakar.com/projects/color-thief/#getting-started
-  const colorThief = new ColorThief()
+  // Loop through each image and set the crossOrigin attribute
+  images.forEach(image => {
+    image.setAttribute('crossOrigin', 'anonymous');
+  });
 
   function setColor() {
     let color = colorThief.getColor(img)
