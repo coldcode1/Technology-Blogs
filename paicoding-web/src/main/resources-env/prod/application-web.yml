@@ -10,7 +10,7 @@ spring:
     encoding: UTF-8
     servlet:
       content-type: text/html
-    cache: true # 开启缓存
+    cache: false # 开启缓存
 
 
 chatgpt:
