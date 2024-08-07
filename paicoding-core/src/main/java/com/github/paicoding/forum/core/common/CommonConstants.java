@@ -49,7 +49,7 @@ public class CommonConstants {
             });
             put(CATEGORY_BACK_EMD, new ArrayList<String>() {
                 {
-                    add("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/images/5.jif");
+                    add("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/images/5.gif");
                     add("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/images/6.jpg");
                     add("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/images/7.jpg");
                     add("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/images/8.jpg");
