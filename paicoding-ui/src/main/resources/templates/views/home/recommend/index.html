@@ -42,13 +42,7 @@
 
 <script>
   const img = document.getElementById("cover0")
-  // Get all the images with IDs starting with 'cover'
-  const images = document.querySelectorAll('[id^="cover"]');
 
-  // Loop through each image and set the crossOrigin attribute
-  images.forEach(image => {
-    image.setAttribute('crossOrigin', 'anonymous');
-  });
 
   function setColor() {
     let color = colorThief.getColor(img)
