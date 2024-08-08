@@ -19,7 +19,7 @@
         <div class="title">
           <span class="new-tag-wrap tag" th:if="${column.type == 2}">上新</span>
           <span class="text-highlight" th:text="${column.column}">
-            分布式专栏
+            专栏类别很广，无法简单概括
           </span>
         </div>
 
@@ -38,7 +38,7 @@
                 class="name"
                 th:text="${column.authorName}"
               >
-                一灰
+                且听风吟
               </span>
 
               <span class="self-description">
@@ -58,11 +58,11 @@
             <span class="message">
               <span class="article-count"
                     th:text="(${column.state == 2} ? '已完结 ' : '已更新 ') + ${column.count.articleCount} + ' 小节'">
-                已更新21小节
+                已更新?小节
               </span>
               <span class="read-count"
                     th:text="'共 ' + ${column.count.totalNums} + ' 节'">
-                共100节
+                共?节
               </span>
               <span class="read-count" th:text="${column.count.readCount} + ' 人已阅读'">
                 多少人阅读
@@ -81,7 +81,7 @@
         </div>
 
         <span class="text-highlight desc" th:text="${column.introduction}">
-          一个简单的分布式专栏
+          作者未分栏
         </span>
       </div>
     </a>

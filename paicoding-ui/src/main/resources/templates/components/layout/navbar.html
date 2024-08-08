@@ -23,7 +23,8 @@
             </div>
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/">首页</a>
-              <a class="dropdown-item" href="/column">教程</a>
+              <a class="dropdown-item" href="/column">技术专栏</a>
+              <a class="dropdown-item" href="/column">热门项目</a>
               <a class="dropdown-item" href="/chat">派聪明</a>
             </div>
           </div>
@@ -43,7 +44,13 @@
                   th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'column') ? ' selected-domain' : '')}"
                   class="nav-item"
           >
-            <a class="nav-link" href="/column">教程</a>
+            <a class="nav-link" href="/column">技术专栏</a>
+          </li>
+          <li
+                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'column') ? ' selected-domain' : '')}"
+                  class="nav-item"
+          >
+            <a class="nav-link" href="/column">热门项目</a>
           </li>
           <li
                   th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'chat') ? ' selected-domain' : '')}"
@@ -190,6 +197,7 @@
                     <input type="password" required class="form-control form-control-sm" id="password" placeholder="输入密码">
                   </div>
                   <button type="submit" class="btn btn-primary btn-block btn-sm">登录</button>
+                  <button type="submit" class="btn btn-primary btn-block btn-sm">还没登陆？欢迎注册~</button>
                 </form>
               </div>
               <div class="other-login-box">
