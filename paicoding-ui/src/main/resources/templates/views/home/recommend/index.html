@@ -42,11 +42,7 @@
 
 <script>
   const img = document.getElementById("cover0")
-  // 服务器 cdn 开启跨域消息头
-  img.setAttribute('crossOrigin', '')
 
-  // https://lokeshdhakar.com/projects/color-thief/#getting-started
-  const colorThief = new ColorThief()
 
   function setColor() {
     let color = colorThief.getColor(img)
