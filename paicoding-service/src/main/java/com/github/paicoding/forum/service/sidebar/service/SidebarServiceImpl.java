@@ -57,10 +57,10 @@ public class SidebarServiceImpl implements SidebarService {
     @Cacheable(key = "'homeSidebar'", cacheManager = "caffeineCacheManager", cacheNames = "home")
     public List<SideBarDTO> queryHomeSidebarList() {
         List<SideBarDTO> list = new ArrayList<>();
-        list.add(noticeSideBar());
-        list.add(columnSideBar());
-        list.add(hotArticles());
-        SideBarDTO bar = rankList();
+        list.add(noticeSideBar());      // 公告信息
+        list.add(columnSideBar());      // 精选教程
+        list.add(hotArticles());        // 热门文章
+        SideBarDTO bar = rankList();    // 此处完成用户排行榜
         if (bar != null) {
             list.add(bar);
         }
@@ -91,10 +91,10 @@ public class SidebarServiceImpl implements SidebarService {
             );
         });
         return new SideBarDTO()
-                .setTitle("关于技术派")
+                .setTitle("关于技术博客园")
                 // TODO 知识星球的
-                .setImg("https://cdn.tobebetterjavaer.com/paicoding/main/paicoding-zsxq.jpg")
-                .setUrl("https://paicoding.com/article/detail/169")
+                .setImg("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/resourceImages/java.png")
+                .setUrl("https://mp.weixin.qq.com/s?__biz=MzkwNTIyNjQ2Ng==&mid=2247483653&idx=1&sn=3130700b5cb1d17657ffa7c0d8b386dd&chksm=c0fbb088f78c399e9ab12719343ff51be7fd2313c118d1b9001dc9b7a5c73b3eca0a50886708&token=1819902184&lang=zh_CN#rd")
                 .setItems(items)
                 .setStyle(SidebarStyleEnum.NOTICE.getStyle());
     }
@@ -217,9 +217,9 @@ public class SidebarServiceImpl implements SidebarService {
      * @return
      */
     private SideBarDTO subscribeSideBar() {
-        return new SideBarDTO().setTitle("订阅").setSubTitle("楼仔")
-                .setImg("//cdn.tobebetterjavaer.com/paicoding/a768cfc54f59d4a056f79d1c959dcae9.jpg")
-                .setContent("10本校招必刷八股文")
+        return new SideBarDTO().setTitle("订阅").setSubTitle("且听风吟随笔")
+                .setImg("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/wxImages/wxLoginImage.jpg")
+                .setContent("Spring原创深度解析等各种资料")
                 .setStyle(SidebarStyleEnum.SUBSCRIBE.getStyle());
     }
 

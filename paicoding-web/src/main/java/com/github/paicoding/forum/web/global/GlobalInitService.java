@@ -89,6 +89,10 @@ public class GlobalInitService {
                 vo.setCurrentDomain("column");
             } else if (request.getRequestURI().startsWith("/chat")) {
                 vo.setCurrentDomain("chat");
+            } else if (request.getRequestURI().startsWith("/hotproject")) {
+                vo.setCurrentDomain("hotproject");
+            } else if (request.getRequestURI().startsWith("/mall")) {
+                vo.setCurrentDomain("mall");
             } else {
                 vo.setCurrentDomain("article");
             }
