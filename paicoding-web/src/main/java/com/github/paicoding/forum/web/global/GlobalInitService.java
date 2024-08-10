@@ -87,12 +87,14 @@ public class GlobalInitService {
                     ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
             if (request.getRequestURI().startsWith("/column")) {
                 vo.setCurrentDomain("column");
-            } else if (request.getRequestURI().startsWith("/chat")) {
-                vo.setCurrentDomain("chat");
             } else if (request.getRequestURI().startsWith("/hotproject")) {
                 vo.setCurrentDomain("hotproject");
+            } else if (request.getRequestURI().startsWith("/algorithm")) {
+                vo.setCurrentDomain("algorithm");
             } else if (request.getRequestURI().startsWith("/mall")) {
                 vo.setCurrentDomain("mall");
+            } else if (request.getRequestURI().startsWith("/chat")) {
+                vo.setCurrentDomain("chat");
             } else {
                 vo.setCurrentDomain("article");
             }

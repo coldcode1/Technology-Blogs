@@ -25,7 +25,8 @@
               <a class="dropdown-item" href="/">首页</a>
               <a class="dropdown-item" href="/column">技术专栏</a>
               <a class="dropdown-item" href="/hotproject">热门项目</a>
-              <a class="dropdown-item" href="/chat">商城</a>
+              <a class="dropdown-item" href="/algorithm">算法</a>
+              <a class="dropdown-item" href="/mall">商城</a>
               <a class="dropdown-item" href="/chat">派聪明</a>
             </div>
           </div>
@@ -35,7 +36,9 @@
         <ul class="navbar-nav">
           <li
                   th:class="${'nav-item' + (!#strings.equals(global.currentDomain, 'column')
-                    && !#strings.equals(global.currentDomain, 'follow')
+                    && !#strings.equals(global.currentDomain, 'hotproject')
+                    && !#strings.equals(global.currentDomain, 'algorithm')
+                    && !#strings.equals(global.currentDomain, 'mall')
                     && !#strings.equals(global.currentDomain, 'chat')? ' selected-domain' : '')}"
                   class="nav-item"
           >
@@ -56,11 +59,19 @@
           </li>
 
           <li
-                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'chat') ? ' selected-domain' : '')}"
+                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'algorithm') ? ' selected-domain' : '')}"
                   class="nav-item"
           >
-            <a class="nav-link" href="/chat">商城</a>
+            <a class="nav-link" href="/algorithm">算法</a>
           </li>
+
+          <li
+                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'mall') ? ' selected-domain' : '')}"
+                  class="nav-item"
+          >
+            <a class="nav-link" href="/mall">商城</a>
+          </li>
+
           <li
                   th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'chat') ? ' selected-domain' : '')}"
                   class="nav-item"

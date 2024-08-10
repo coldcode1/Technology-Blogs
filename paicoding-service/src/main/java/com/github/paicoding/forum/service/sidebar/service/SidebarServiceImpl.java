@@ -57,7 +57,7 @@ public class SidebarServiceImpl implements SidebarService {
     @Cacheable(key = "'homeSidebar'", cacheManager = "caffeineCacheManager", cacheNames = "home")
     public List<SideBarDTO> queryHomeSidebarList() {
         List<SideBarDTO> list = new ArrayList<>();
-        list.add(noticeSideBar());      // 公告信息
+        list.add(noticeSideBar());      // 关于技术博客园
         list.add(columnSideBar());      // 精选教程
         list.add(hotArticles());        // 热门文章
         SideBarDTO bar = rankList();    // 此处完成用户排行榜
@@ -116,7 +116,7 @@ public class SidebarServiceImpl implements SidebarService {
             item.setImg(configDTO.getBannerUrl());
             items.add(item);
         });
-        return new SideBarDTO().setTitle("精选教程").setItems(items).setStyle(SidebarStyleEnum.COLUMN.getStyle());
+        return new SideBarDTO().setTitle("且听风吟:推荐资源").setItems(items).setStyle(SidebarStyleEnum.COLUMN.getStyle());
     }
 
 

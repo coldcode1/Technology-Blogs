@@ -7,18 +7,14 @@
     <div class="column-content">
         <div class="home-right-item-title absolute">
             <h5 class="com-2-panel-title"
-                 th:text="${side.title}">精选教程</h5>
+                 th:text="${side.title}">推荐资源</h5>
         </div>
         <div class="home-right-item-post-list com-2-panel-bd">
             <ul class="com-2-side-topics without-margin">
                 <li th:each="item : ${side.items}">
                     <a th:href="${item.url}"
                        class="com-media com-side-topic">
-                        <div class="com-media-object">
-                            <span class="com-thumbnail"
-                                  th:style="'background-image:url('+${item.img}+')'">
-                            </span>
-                        </div>
+
                         <div class="com-media-body rank-box-item-right">
                             <div class="com-side-topic-title">
                                 <span class="column-title"

@@ -14,11 +14,6 @@
                 <li th:each="item : ${side.items}">
                     <a th:href="${item.url}"
                        class="com-media com-side-topic">
-                        <div class="com-media-object">
-                            <span class="com-thumbnail"
-                                  th:style="'background-image:url('+${item.img}+')'">
-                            </span>
-                        </div>
                         <div class="com-media-body">
                             <div class="com-side-topic-title">
                                 <span class="vip-free-tag tag">限免</span>
