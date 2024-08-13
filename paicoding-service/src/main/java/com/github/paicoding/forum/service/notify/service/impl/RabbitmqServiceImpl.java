@@ -68,6 +68,7 @@ public class RabbitmqServiceImpl implements RabbitmqService {
             notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.PRAISE);
         } catch (Exception e) {
             log.info("错误信息:{}", e.getMessage());
+            int a = 1;
         }
     }
 
