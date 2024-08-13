@@ -17,6 +17,8 @@ import com.rabbitmq.client.Consumer;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -59,6 +61,17 @@ public class RabbitmqServiceImpl implements RabbitmqService {
 
     }
 
+    @RabbitListener(queues = CommonConstants.QUERE_NAME_PRAISE)
+    public void proposalSaveAndSubmit(String message) {
+        try {
+            log.info("Consumer msg: {}", message);
+            notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.PRAISE);
+        } catch (Exception e) {
+            log.info("错误信息:{}", e.getMessage());
+        }
+    }
+
+
     @Override
     public void consumerMsg(String exchange,
                             String queueName,
@@ -87,13 +100,18 @@ public class RabbitmqServiceImpl implements RabbitmqService {
                     notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.PRAISE);
 
                     channel.basicAck(envelope.getDeliveryTag(), false);
+                    try {
+                        channel.close();
+                    } catch (TimeoutException e) {
+                        throw new RuntimeException(e);
+                    }
+                    RabbitmqConnectionPool.returnConnection(rabbitmqConnection);
                 }
             };
             // 取消自动ack
             channel.basicConsume(queueName, false, consumer);
-            channel.close();
-            RabbitmqConnectionPool.returnConnection(rabbitmqConnection);
-        } catch (InterruptedException | IOException | TimeoutException e) {
+
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -110,8 +128,8 @@ public class RabbitmqServiceImpl implements RabbitmqService {
             step++;
             try {
                 log.info("processConsumerMsg cycle.");
-                consumerMsg(CommonConstants.EXCHANGE_NAME_DIRECT, CommonConstants.QUERE_NAME_PRAISE,
-                        CommonConstants.QUERE_KEY_PRAISE);
+//                consumerMsg(CommonConstants.EXCHANGE_NAME_DIRECT, CommonConstants.QUERE_NAME_PRAISE,
+//                        CommonConstants.QUERE_KEY_PRAISE);
                 if (step.equals(stepTotal)) {
                     Thread.sleep(10000);
                     step = 0;

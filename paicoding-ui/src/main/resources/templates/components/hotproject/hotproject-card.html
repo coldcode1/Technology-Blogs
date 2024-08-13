@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<!-- 专栏详情 -->
+<div th:fragment="column_card(column)">
+  <a
+          th:href="'/column/' + ${column.columnId} + '/1'"
+          class="item"
+  >
+    <div class="info">
+      <div class="title">
+        <span class="new-tag-wrap tag" th:if="${column.type == 2}">hot</span>
+        <span class="text-highlight" th:text="${column.column}">
+          </span>
+      </div>
+
+      <span class="text-highlight desc" th:text="${column.introduction}">
+          没有介绍
+        </span>
+
+    </div>
+  </a>
+</div>
+</html>

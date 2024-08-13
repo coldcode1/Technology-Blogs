@@ -34,6 +34,6 @@ public class HotProjectViewControl {
         vo.setColumns(columns);
         vo.setSideBarItems(sidebars);
         model.addAttribute("vo", vo);
-        return "views/column-home/index";
+        return "views/hotproject-home/index";
     }
 }

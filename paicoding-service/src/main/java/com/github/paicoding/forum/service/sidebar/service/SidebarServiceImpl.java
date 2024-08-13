@@ -58,7 +58,7 @@ public class SidebarServiceImpl implements SidebarService {
     public List<SideBarDTO> queryHomeSidebarList() {
         List<SideBarDTO> list = new ArrayList<>();
         list.add(noticeSideBar());      // 关于技术博客园
-        list.add(columnSideBar());      // 精选教程
+        list.add(columnSideBar());      // 推荐资源
         list.add(hotArticles());        // 热门文章
         SideBarDTO bar = rankList();    // 此处完成用户排行榜
         if (bar != null) {
@@ -93,8 +93,6 @@ public class SidebarServiceImpl implements SidebarService {
         return new SideBarDTO()
                 .setTitle("关于技术博客园")
                 // TODO 知识星球的
-                .setImg("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/resourceImages/java.png")
-                .setUrl("https://mp.weixin.qq.com/s?__biz=MzkwNTIyNjQ2Ng==&mid=2247483653&idx=1&sn=3130700b5cb1d17657ffa7c0d8b386dd&chksm=c0fbb088f78c399e9ab12719343ff51be7fd2313c118d1b9001dc9b7a5c73b3eca0a50886708&token=1819902184&lang=zh_CN#rd")
                 .setItems(items)
                 .setStyle(SidebarStyleEnum.NOTICE.getStyle());
     }
