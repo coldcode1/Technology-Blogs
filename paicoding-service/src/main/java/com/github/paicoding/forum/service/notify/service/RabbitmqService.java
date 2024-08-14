@@ -30,6 +30,14 @@ public interface RabbitmqService {
 
 
     /**
+     * listen 保存并提交提案
+     * @param message
+     */
+    void proposalSaveAndSubmit(String message);
+
+
+
+    /**
      * 消费消息
      *
      * @param exchange

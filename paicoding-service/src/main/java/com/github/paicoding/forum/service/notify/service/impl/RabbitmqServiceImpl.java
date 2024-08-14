@@ -48,8 +48,7 @@ public class RabbitmqServiceImpl implements RabbitmqService {
             Connection connection = rabbitmqConnection.getConnection();
             //创建消息通道
             Channel channel = connection.createChannel();
-            // 声明exchange中的消息为可持久化，不自动删除
-            channel.exchangeDeclare(exchange, exchangeType, true, false, null);
+
             // 发布消息
             channel.basicPublish(exchange, toutingKey, null, message.getBytes());
             log.info("Publish msg: {}", message);
@@ -61,11 +60,23 @@ public class RabbitmqServiceImpl implements RabbitmqService {
 
     }
 
+    @Override
     @RabbitListener(queues = CommonConstants.QUERE_NAME_PRAISE)
     public void proposalSaveAndSubmit(String message) {
         try {
             log.info("Consumer msg: {}", message);
             notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.PRAISE);
+        } catch (Exception e) {
+            log.info("错误信息:{}", e.getMessage());
+
+        }
+    }
+
+    @RabbitListener(queues = CommonConstants.QUERE_NAME_COLLECT)
+    public void collectSaveAndSubmit(String message) {
+        try {
+            log.info("Consumer msg: {}", message);
+            notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.COLLECT);
         } catch (Exception e) {
             log.info("错误信息:{}", e.getMessage());
 

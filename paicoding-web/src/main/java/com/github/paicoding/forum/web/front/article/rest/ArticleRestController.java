@@ -211,11 +211,17 @@ public class ArticleRestController {
         NotifyTypeEnum notifyType = OperateTypeEnum.getNotifyType(operate);
 
         // 点赞消息走 RabbitMQ，其它走 Java 内置消息机制
-        if (notifyType.equals(NotifyTypeEnum.PRAISE) && rabbitmqService.enabled()) {
+        if (notifyType.equals(NotifyTypeEnum.PRAISE)  && rabbitmqService.enabled()) {
             rabbitmqService.publishMsg(
                     CommonConstants.EXCHANGE_NAME_DIRECT,
                     BuiltinExchangeType.DIRECT,
                     CommonConstants.QUERE_KEY_PRAISE,
+                    JsonUtil.toStr(foot));
+        } else if (notifyType.equals(NotifyTypeEnum.COLLECT) && rabbitmqService.enabled()){
+            rabbitmqService.publishMsg(
+                    CommonConstants.EXCHANGE_NAME_DIRECT,
+                    BuiltinExchangeType.DIRECT,
+                    CommonConstants.QUERE_KEY_COLLECT,
                     JsonUtil.toStr(foot));
         } else {
             Optional.ofNullable(notifyType).ifPresent(notify -> SpringUtil.publishEvent(new NotifyMsgEvent<>(this, notify, foot)));

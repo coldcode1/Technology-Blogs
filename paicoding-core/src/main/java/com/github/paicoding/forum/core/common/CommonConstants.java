@@ -20,6 +20,9 @@ public class CommonConstants {
     public final static String QUERE_KEY_PRAISE = "praise";
     public final static String QUERE_NAME_PRAISE = "quere.praise";
 
+    public final static String QUERE_KEY_COLLECT = "collect";
+    public final static String QUERE_NAME_COLLECT = "quere.collect";
+
     /**
      * 分类类型
      */
