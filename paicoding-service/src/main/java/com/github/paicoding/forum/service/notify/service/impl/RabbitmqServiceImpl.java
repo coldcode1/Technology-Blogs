@@ -143,7 +143,7 @@ public class RabbitmqServiceImpl implements RabbitmqService {
 //                consumerMsg(CommonConstants.EXCHANGE_NAME_DIRECT, CommonConstants.QUERE_NAME_PRAISE,
 //                        CommonConstants.QUERE_KEY_PRAISE);
                 if (step.equals(stepTotal)) {
-                    Thread.sleep(10000);
+                    Thread.sleep(1000000);
                     step = 0;
                 }
             } catch (Exception e) {

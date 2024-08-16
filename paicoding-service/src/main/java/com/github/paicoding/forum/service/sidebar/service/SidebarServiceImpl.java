@@ -1,5 +1,6 @@
 package com.github.paicoding.forum.service.sidebar.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.paicoding.forum.api.model.enums.ConfigTypeEnum;
 import com.github.paicoding.forum.api.model.enums.SidebarStyleEnum;
 import com.github.paicoding.forum.api.model.enums.rank.ActivityRankTimeEnum;
@@ -43,6 +44,9 @@ public class SidebarServiceImpl implements SidebarService {
 
     @Autowired
     private ArticleDao articleDao;
+
+    @Autowired
+    private Cache<String,Object> typeId2NameCache;
 
     /**
      * 使用caffeine本地缓存，来处理侧边栏不怎么变动的消息
@@ -125,7 +129,14 @@ public class SidebarServiceImpl implements SidebarService {
      */
     private SideBarDTO hotArticles() {
         PageListVo<SimpleArticleDTO> vo = articleReadService.queryHotArticlesForRecommend(PageParam.newPageInstance(1, 8));
-        List<SideBarItemDTO> items = vo.getList().stream().map(s -> new SideBarItemDTO().setTitle(s.getTitle()).setUrl("/article/detail/" + s.getId()).setTime(s.getCreateTime().getTime())).collect(Collectors.toList());
+        Object hotArtile = typeId2NameCache.getIfPresent("hotArtile");
+        List<SideBarItemDTO> items;
+        if(hotArtile==null){
+            items = vo.getList().stream().map(s -> new SideBarItemDTO().setTitle(s.getTitle()).setUrl("/article/detail/" + s.getId()).setTime(s.getCreateTime().getTime())).collect(Collectors.toList());
+            typeId2NameCache.put("hotArtile",items);
+        }else {
+            items = (List<SideBarItemDTO>) hotArtile;
+        }
         return new SideBarDTO().setTitle("热门文章").setItems(items).setStyle(SidebarStyleEnum.ARTICLES.getStyle());
     }
 
