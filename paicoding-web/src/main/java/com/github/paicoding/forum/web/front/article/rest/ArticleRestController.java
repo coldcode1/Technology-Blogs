@@ -18,6 +18,7 @@ import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.notify.NotifyMsgEvent;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import com.github.paicoding.forum.core.common.CommonConstants;
+import com.github.paicoding.forum.core.config.RabbitmqProperties;
 import com.github.paicoding.forum.core.mdc.MdcDot;
 import com.github.paicoding.forum.core.permission.Permission;
 import com.github.paicoding.forum.core.permission.UserRole;
@@ -89,6 +90,9 @@ public class ArticleRestController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RabbitmqProperties rabbitmqProperties;
 
     /**
      * 文章详情页
@@ -211,13 +215,13 @@ public class ArticleRestController {
         NotifyTypeEnum notifyType = OperateTypeEnum.getNotifyType(operate);
 
         // 点赞消息走 RabbitMQ，其它走 Java 内置消息机制
-        if (notifyType.equals(NotifyTypeEnum.PRAISE)  && rabbitmqService.enabled()) {
+        if (notifyType.equals(NotifyTypeEnum.PRAISE)  && rabbitmqProperties.getSwitchFlag()) {
             rabbitmqService.publishMsg(
                     CommonConstants.EXCHANGE_NAME_DIRECT,
                     BuiltinExchangeType.DIRECT,
                     CommonConstants.QUERE_KEY_PRAISE,
                     JsonUtil.toStr(foot));
-        } else if (notifyType.equals(NotifyTypeEnum.COLLECT) && rabbitmqService.enabled()){
+        } else if (notifyType.equals(NotifyTypeEnum.COLLECT) && rabbitmqProperties.getSwitchFlag()){
             rabbitmqService.publishMsg(
                     CommonConstants.EXCHANGE_NAME_DIRECT,
                     BuiltinExchangeType.DIRECT,

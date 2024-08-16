@@ -28,15 +28,6 @@ public interface RabbitmqService {
                     String toutingKey,
                     String message) throws IOException, TimeoutException;
 
-
-    /**
-     * listen 保存并提交提案
-     * @param message
-     */
-    void proposalSaveAndSubmit(String message);
-
-
-
     /**
      * 消费消息
      *

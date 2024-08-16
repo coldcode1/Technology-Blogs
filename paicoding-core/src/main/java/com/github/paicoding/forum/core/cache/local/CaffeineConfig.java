@@ -4,7 +4,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 public class CaffeineConfig {
     public static final String CACHE_NAME = "typeId2NameCache";
 
-    @Bean
-    public Cache<String, Object> typeId2NameCache(){
+    @Bean(name = "hotArticleCaffeineCache")
+    public Cache<String, Object> HotArticleCaffeineCache(){
         return Caffeine.newBuilder()
                 .expireAfterWrite(10, TimeUnit.MINUTES)
                 .maximumSize(100)

@@ -46,7 +46,7 @@ public class SidebarServiceImpl implements SidebarService {
     private ArticleDao articleDao;
 
     @Autowired
-    private Cache<String,Object> typeId2NameCache;
+    private Cache<String,Object> hotArticleCaffeineCache;
 
     /**
      * 使用caffeine本地缓存，来处理侧边栏不怎么变动的消息
@@ -58,8 +58,12 @@ public class SidebarServiceImpl implements SidebarService {
      * @return
      */
     @Override
-    @Cacheable(key = "'homeSidebar'", cacheManager = "caffeineCacheManager", cacheNames = "home")
+    // @Cacheable(key = "'homeSidebar'", cacheManager = "caffeineCacheManager", cacheNames = "home")
     public List<SideBarDTO> queryHomeSidebarList() {
+        Object homeSidebar = hotArticleCaffeineCache.getIfPresent("homeSidebar");
+        if(homeSidebar != null){
+            return (List<SideBarDTO>) homeSidebar;
+        }
         List<SideBarDTO> list = new ArrayList<>();
         list.add(noticeSideBar());      // 关于技术博客园
         list.add(columnSideBar());      // 推荐资源
@@ -68,6 +72,7 @@ public class SidebarServiceImpl implements SidebarService {
         if (bar != null) {
             list.add(bar);
         }
+        hotArticleCaffeineCache.put("homeSidebar",list);
         return list;
     }
 
@@ -129,11 +134,11 @@ public class SidebarServiceImpl implements SidebarService {
      */
     private SideBarDTO hotArticles() {
         PageListVo<SimpleArticleDTO> vo = articleReadService.queryHotArticlesForRecommend(PageParam.newPageInstance(1, 8));
-        Object hotArtile = typeId2NameCache.getIfPresent("hotArtile");
+        Object hotArtile = hotArticleCaffeineCache.getIfPresent("hotArtile");
         List<SideBarItemDTO> items;
         if(hotArtile==null){
             items = vo.getList().stream().map(s -> new SideBarItemDTO().setTitle(s.getTitle()).setUrl("/article/detail/" + s.getId()).setTime(s.getCreateTime().getTime())).collect(Collectors.toList());
-            typeId2NameCache.put("hotArtile",items);
+            hotArticleCaffeineCache.put("hotArtile",items);
         }else {
             items = (List<SideBarItemDTO>) hotArtile;
         }

@@ -60,8 +60,6 @@ public class RabbitMqAutoConfig implements ApplicationRunner {
 
         RabbitmqConnectionPool.returnConnection(connection);
 
-
-
         AsyncUtil.execute(() -> rabbitmqService.processConsumerMsg());
     }
 }

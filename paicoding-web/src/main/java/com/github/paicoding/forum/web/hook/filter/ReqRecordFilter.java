@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -45,6 +46,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @WebFilter(urlPatterns = "/*", filterName = "reqRecordFilter", asyncSupported = true)
+@Component
 public class ReqRecordFilter implements Filter {
     private static Logger REQ_LOG = LoggerFactory.getLogger("req");
     /**

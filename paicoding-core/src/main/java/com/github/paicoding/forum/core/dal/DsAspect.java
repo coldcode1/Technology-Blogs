@@ -6,6 +6,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
@@ -14,7 +16,12 @@ import java.lang.reflect.Method;
  * @date 2023/4/30
  */
 @Aspect
+@Component
 public class DsAspect {
+
+    @Value("${rabbitmq.switchFlag}")
+    private boolean switchFlag;
+
     /**
      * 切入点, 拦截类上、方法上有注解的方法，用于切换数据源
      */

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -58,29 +59,6 @@ public class RabbitmqServiceImpl implements RabbitmqService {
             e.printStackTrace();
         }
 
-    }
-
-    @Override
-    @RabbitListener(queues = CommonConstants.QUERE_NAME_PRAISE)
-    public void proposalSaveAndSubmit(String message) {
-        try {
-            log.info("Consumer msg: {}", message);
-            notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.PRAISE);
-        } catch (Exception e) {
-            log.info("错误信息:{}", e.getMessage());
-
-        }
-    }
-
-    @RabbitListener(queues = CommonConstants.QUERE_NAME_COLLECT)
-    public void collectSaveAndSubmit(String message) {
-        try {
-            log.info("Consumer msg: {}", message);
-            notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.COLLECT);
-        } catch (Exception e) {
-            log.info("错误信息:{}", e.getMessage());
-
-        }
     }
 
 

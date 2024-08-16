@@ -4,5 +4,5 @@ rabbitmq:
   username: guest
   passport: guest
   virtualhost: /
-  switchFlag: true
+  switchFlag: false
   pool_size: 10
