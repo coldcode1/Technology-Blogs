@@ -12,6 +12,7 @@ image:
     endpoint: oss-cn-shanghai.aliyuncs.com
     prefix: techonologyblogs/
     ak:
+
     sk:
     bucket: technology-blogs
     host: https://technology-blogs.oss-cn-shanghai.aliyuncs.com/
