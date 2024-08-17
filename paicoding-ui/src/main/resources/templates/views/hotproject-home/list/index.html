@@ -1,6 +1,7 @@
-<div th:each="column : ${vo.columns.list}" th:if="${column.count.articleCount != 0}">
-    <div th:replace="components/hotproject/hotproject-card :: column_card(${column})">
-        专栏详情
+<div th:each="hotproject : ${vo.hotprojects.list}">
+    <!-- This was made with GlassGenerator.netlify.app -->
+    <div th:replace="components/hotproject/hotproject-card :: hotproject_card(${hotproject})">
+        热门项目详情
     </div>
 </div>
 <script>

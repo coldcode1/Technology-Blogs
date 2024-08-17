@@ -1,8 +1,8 @@
 rabbitmq:
   host: 127.0.0.1
   port: 5672
-  username: guest
-  passport: guest
+  username: admin
+  passport: 199810dong
   virtualhost: /
   switchFlag: true
   pool_size: 10

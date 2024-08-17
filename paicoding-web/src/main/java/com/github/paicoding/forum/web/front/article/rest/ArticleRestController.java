@@ -217,14 +217,14 @@ public class ArticleRestController {
         // 点赞消息走 RabbitMQ，其它走 Java 内置消息机制
         if (notifyType.equals(NotifyTypeEnum.PRAISE)  && rabbitmqProperties.getSwitchFlag()) {
             rabbitmqService.publishMsg(
-                    CommonConstants.EXCHANGE_NAME_DIRECT,
-                    BuiltinExchangeType.DIRECT,
+                    CommonConstants.EXCHANGE_NAME_TOPIC,
+                    BuiltinExchangeType.TOPIC,
                     CommonConstants.QUERE_KEY_PRAISE,
                     JsonUtil.toStr(foot));
         } else if (notifyType.equals(NotifyTypeEnum.COLLECT) && rabbitmqProperties.getSwitchFlag()){
             rabbitmqService.publishMsg(
-                    CommonConstants.EXCHANGE_NAME_DIRECT,
-                    BuiltinExchangeType.DIRECT,
+                    CommonConstants.EXCHANGE_NAME_TOPIC,
+                    BuiltinExchangeType.TOPIC,
                     CommonConstants.QUERE_KEY_COLLECT,
                     JsonUtil.toStr(foot));
         } else {

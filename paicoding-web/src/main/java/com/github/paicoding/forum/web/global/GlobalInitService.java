@@ -85,9 +85,7 @@ public class GlobalInitService {
 
             HttpServletRequest request =
                     ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-            if (request.getRequestURI().startsWith("/column")) {
-                vo.setCurrentDomain("column");
-            } else if (request.getRequestURI().startsWith("/hotproject")) {
+            if (request.getRequestURI().startsWith("/hotproject")) {
                 vo.setCurrentDomain("hotproject");
             } else if (request.getRequestURI().startsWith("/algorithm")) {
                 vo.setCurrentDomain("algorithm");

@@ -165,9 +165,10 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
 
         // 如果分页中置顶的四条数据，需要加上官方的查询条件
         // 说明是查询官方的文章，非置顶的文章，只限制全部分类
-        if (categoryId == null && pageParam.getPageSize() == PageParam.TOP_PAGE_SIZE) {
-            query.eq(ArticleDO::getOfficalStat, OfficalStatEnum.OFFICAL.getCode());
-        }
+//        if (categoryId == null && pageParam.getPageSize() == PageParam.TOP_PAGE_SIZE) {
+//            query.eq(ArticleDO::getOfficalStat, OfficalStatEnum.OFFICAL.getCode());
+//        }
+        // 现在文章太少了，全部显示！
 
         Optional.ofNullable(categoryId).ifPresent(cid -> query.eq(ArticleDO::getCategoryId, cid));
         query.last(PageParam.getLimitSql(pageParam))

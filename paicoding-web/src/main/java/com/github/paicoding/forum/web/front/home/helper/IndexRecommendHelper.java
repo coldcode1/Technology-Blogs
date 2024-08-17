@@ -58,7 +58,7 @@ public class IndexRecommendHelper {
         AsyncUtil.concurrentExecutor("首页响应")
                 .async(() -> vo.setArticles(articleList(category.getCategoryId())), "文章列表")
                 .async(() -> vo.setTopArticles(topArticleList(category)), "置顶文章")
-                .async(() -> vo.setHomeCarouselList(homeCarouselList()), "轮播图")
+                // .async(() -> vo.setHomeCarouselList(homeCarouselList()), "轮播图")
                 .async(() -> vo.setSideBarItems(sidebarService.queryHomeSidebarList()), "侧边栏")
                 .async(() -> vo.setUser(loginInfo()), "用户信息")
                 .allExecuted()

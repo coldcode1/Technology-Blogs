@@ -23,7 +23,6 @@
             </div>
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/">首页</a>
-              <a class="dropdown-item" href="/column">技术专栏</a>
               <a class="dropdown-item" href="/hotproject">热门项目</a>
               <a class="dropdown-item" href="/algorithm">算法</a>
               <a class="dropdown-item" href="/mall">商城</a>
@@ -35,8 +34,7 @@
       <div class="collapse navbar-collapse">
         <ul class="navbar-nav">
           <li
-                  th:class="${'nav-item' + (!#strings.equals(global.currentDomain, 'column')
-                    && !#strings.equals(global.currentDomain, 'hotproject')
+                  th:class="${'nav-item' + (!#strings.equals(global.currentDomain, 'hotproject')
                     && !#strings.equals(global.currentDomain, 'algorithm')
                     && !#strings.equals(global.currentDomain, 'mall')
                     && !#strings.equals(global.currentDomain, 'chat')? ' selected-domain' : '')}"
@@ -44,13 +42,6 @@
           >
             <a class="nav-link" href="/">首页</a>
           </li>
-          <li
-                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'column') ? ' selected-domain' : '')}"
-                  class="nav-item"
-          >
-            <a class="nav-link" href="/column">技术专栏</a>
-          </li>
-
           <li
                   th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'hotproject') ? ' selected-domain' : '')}"
                   class="nav-item"

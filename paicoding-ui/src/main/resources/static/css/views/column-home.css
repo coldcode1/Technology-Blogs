@@ -48,6 +48,8 @@
     padding-left: 22px;
 }
 
+
+
 .info .messages {
     font-size: 14px;
 }
@@ -60,6 +62,13 @@
 .title {
     font-size: 20px;
     line-height: 28px;
+}
+
+.colortxt{
+    font-size: 28px;
+    background: linear-gradient(to right, red, blue);
+    -webkit-background-clip: text;
+    color: transparent;
 }
 
 .info .desc {
@@ -254,4 +263,17 @@
         font-size: 16px;
         line-height: 22px;
     }
+
+    /* This was made with GlassGenerator.netlify.app */
+
+
+    .threeD{
+        font-size:20px; /*设置字体大小*/
+        font-weight:800; /*设置字体粗细*/
+        text-shadow:1px 0px #009916, 1px 2px #006615, 3px 1px #009916,
+        2px 3px #006615, 4px 2px #009916, 4px 4px #006615,
+        5px 3px #009916, 5px 5px #006615, 7px 4px #009916
+    }
+
+
 }

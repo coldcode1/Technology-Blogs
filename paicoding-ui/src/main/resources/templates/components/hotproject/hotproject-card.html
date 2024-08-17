@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <!-- 专栏详情 -->
-<div th:fragment="column_card(column)">
+<div th:fragment="hotproject_card(hotproject)">
   <a
-          th:href="'/column/' + ${column.columnId} + '/1'"
+          th:href="${hotproject.url}"
           class="item"
   >
     <div class="info">
+
       <div class="title">
-        <span class="new-tag-wrap tag" th:if="${column.type == 2}">hot</span>
-        <span class="text-highlight" th:text="${column.column}">
-          </span>
+        <span class="colortxt" th:text="${hotproject.index}"></span>
+        <span class="text-highlight" th:text="${hotproject.name}"></span>
       </div>
 
-      <span class="text-highlight desc" th:text="${column.introduction}">
+      <span class="text-highlight desc" th:text="${hotproject.description}">
           没有介绍
         </span>
 

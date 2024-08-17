@@ -16,7 +16,6 @@ import com.github.paicoding.forum.service.article.repository.dao.ArticleDao;
 import com.github.paicoding.forum.service.article.repository.dao.ArticleTagDao;
 import com.github.paicoding.forum.service.article.repository.entity.ArticleDO;
 import com.github.paicoding.forum.service.article.service.ArticleWriteService;
-import com.github.paicoding.forum.service.article.service.ColumnSettingService;
 import com.github.paicoding.forum.service.image.service.ImageService;
 import com.github.paicoding.forum.service.user.service.AuthorWhiteListService;
 import com.github.paicoding.forum.service.user.service.UserFootService;
@@ -45,9 +44,6 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
     private final ArticleDao articleDao;
 
     private final ArticleTagDao articleTagDao;
-
-    @Autowired
-    private ColumnSettingService columnSettingService;
 
     @Autowired
     private UserFootService userFootService;
@@ -86,10 +82,6 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
                 } else {
                     articleId = updateArticle(article, content, req.getTagIds());
                     log.info("文章更新成功！ title={}", article.getTitle());
-                }
-                if (req.getColumnId() != null) {
-                    // 更新文章对应的专栏信息
-                    columnSettingService.saveColumnArticle(articleId, req.getColumnId());
                 }
                 return articleId;
             }
