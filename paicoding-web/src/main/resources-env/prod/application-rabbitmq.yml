@@ -4,5 +4,9 @@ rabbitmq:
   username: guest
   passport: guest
   virtualhost: /
-  switchFlag: false
+  switchFlag: true
   pool_size: 10
+  #  RabbitMQ会发送一个确认（acknowledgment）给生产者
+  publisher-confirms: true
+  # 当RabbitMQ无法路由消息到指定的队列（例如，队列不存在或没有绑定）时，RabbitMQ会将消息返回给生产者。这允许生产者处理消息路由失败的情况，通常用于日志记录或重新处理消息。
+  publisher-returns: true

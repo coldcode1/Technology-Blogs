@@ -12,7 +12,6 @@ import java.util.concurrent.TimeUnit;
  */
 @Configuration
 public class CaffeineConfig {
-    public static final String CACHE_NAME = "typeId2NameCache";
 
     @Bean(name = "hotArticleCaffeineCache")
     public Cache<String, Object> HotArticleCaffeineCache(){

@@ -18,7 +18,7 @@ public class EmailUtil {
         if (from == null) {
             synchronized (EmailUtil.class) {
                 if (from == null) {
-                    from = SpringUtil.getConfig("spring.mail.from", "xhhuiblog@163.com");
+                    from = SpringUtil.getConfig("spring.mail.from", "tfengying2024@163.com");
                 }
             }
         }

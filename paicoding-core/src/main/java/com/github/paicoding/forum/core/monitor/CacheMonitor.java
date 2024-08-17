@@ -17,7 +17,7 @@ public class CacheMonitor {
     @Autowired
     private Cache<String,Object> hotArticleCaffeineCache;
 
-    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedRate = 5, timeUnit = TimeUnit.MINUTES)
     private void monitorCache() {
         CacheStats stats = hotArticleCaffeineCache.stats();
         log.info("缓存命中率：{}", stats.hitRate());
