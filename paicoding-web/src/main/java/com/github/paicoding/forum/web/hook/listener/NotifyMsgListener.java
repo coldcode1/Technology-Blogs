@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.service.notify.service.impl;
+package com.github.paicoding.forum.web.hook.listener;
 
 import com.github.paicoding.forum.api.model.enums.NotifyStatEnum;
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;

@@ -209,7 +209,7 @@
                   </div>
                   <button type="submit" class="btn btn-primary btn-block btn-sm">登录</button>
                   <p class="mt-3 mb-3 text-muted text-sm-right">还没有账号，
-                    <a class="text-info" href="#" draggable="false">立即注册</a>
+                    <a id="openRegisterModal" class="text-info" href="#">立即注册</a>
                   </p>
                 </form>
               </div>
@@ -282,10 +282,131 @@
     </div>
   </div>
 
+  <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title">注册账户</h6>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="register-form">
+            <div class="form-group">
+              <input type="text" required class="form-control form-control-sm" id="registerUser" placeholder="输入用户名">
+            </div>
+            <div class="form-group">
+              <input type="text" required class="form-control form-control-sm" id="starNumber" placeholder="星球编号">
+            </div>
+            <div class="form-group">
+              <input type="password" required class="form-control form-control-sm" id="registerPassword" placeholder="输入密码">
+            </div>
+            <div class="form-group">
+              <input type="text" class="form-control form-control-sm" id="invitationCode" placeholder="邀请码">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-sm">注册</button>
+            <p class="mt-3 mb-3 text-muted text-sm-right">
+              <a id="backToLogin" class="text-info" href="#">返回登录</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script
           src="/js/mock.js"
           th:if="${!#strings.equals(global.env, 'prod')}"
   ></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // 获取“立即注册”链接元素
+      var registerLink = document.getElementById('openRegisterModal');
+
+      if (registerLink) {
+        // 给“立即注册”链接添加点击事件监听器
+        registerLink.addEventListener('click', function (event) {
+          event.preventDefault(); // 防止默认的链接跳转行为
+
+          // 获取登录模态框元素
+          var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+
+          // 隐藏登录模态框
+          loginModal.hide();
+
+          // 显示注册模态框
+          var registerModal = new bootstrap.Modal(document.getElementById('registerModal'));
+          registerModal.show();
+        });
+      }
+
+      // 处理注册表单的提交
+      document.getElementById('register-form').addEventListener('submit', function (event) {
+        event.preventDefault(); // 防止默认的表单提交行为
+
+        // 获取注册表单数据
+        const registerUser = $('#registerUser').val();
+        const starNumber = $("#starNumber").val() || '00000';
+        const password = $("#registerPassword").val();
+        const invitationCode = $("#invitationCode").val();
+
+        $.ajax({
+          url: "/login/register",
+          type: "POST",
+          data: {
+            username: registerUser,
+            starNumber: starNumber.toString().padStart(5, '0'),
+            password: password,
+            invitationCode: invitationCode
+          },
+          success: function (response) {
+            console.log(response);
+            if (response.status.code === 0) {
+              // 注册成功，隐藏注册模态框
+              var registerModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+              if (registerModal) {
+                registerModal.hide();
+              }
+
+              // 显示登录模态框
+              setTimeout(function () {
+                var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                loginModal.show();
+              }, 300); // 根据需要调整这个延时（300ms是一个典型的值）
+            } else {
+              // 注册失败
+              toastr.error(response.status.msg);
+            }
+          },
+          error: function (error) {
+            console.error(error);
+            // 出现错误时如何处理
+          }
+        });
+      });
+
+      // 处理返回登录按钮的点击事件
+      document.getElementById('backToLogin').addEventListener('click', function (event) {
+        event.preventDefault(); // 防止默认的链接跳转行为
+
+        // 隐藏注册模态框
+        var registerModal = bootstrap.Modal.getInstance(document.getElementById('registerModal'));
+        if (registerModal) {
+          registerModal.hide();
+        }
+
+        // 显示登录模态框
+        setTimeout(function () {
+          var loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+          loginModal.show();
+        }, 300); // 根据需要调整这个延时（300ms是一个典型的值）
+      });
+    });
+  </script>
+
+
   <script th:inline="javascript">
     // 是否自动刷新验证码
     let autoRefresh;
@@ -546,3 +667,4 @@
   </script>
 </div>
 </html>
+
