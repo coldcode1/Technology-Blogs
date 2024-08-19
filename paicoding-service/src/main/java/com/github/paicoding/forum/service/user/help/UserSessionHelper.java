@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.service.user.service.help;
+package com.github.paicoding.forum.service.user.help;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;

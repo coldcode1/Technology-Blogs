@@ -6,6 +6,7 @@ import com.github.paicoding.forum.api.model.exception.ExceptionUtil;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.notify.NotifyMsgEvent;
 import com.github.paicoding.forum.api.model.vo.user.UserPwdLoginReq;
+import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
 import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.core.util.TransactionUtil;
 import com.github.paicoding.forum.service.user.converter.UserAiConverter;
@@ -15,8 +16,9 @@ import com.github.paicoding.forum.service.user.repository.entity.UserAiDO;
 import com.github.paicoding.forum.service.user.repository.entity.UserDO;
 import com.github.paicoding.forum.service.user.repository.entity.UserInfoDO;
 import com.github.paicoding.forum.service.user.service.RegisterService;
-import com.github.paicoding.forum.service.user.service.help.UserPwdEncoder;
-import com.github.paicoding.forum.service.user.service.help.UserRandomGenHelper;
+import com.github.paicoding.forum.service.user.help.UserPwdEncoder;
+import com.github.paicoding.forum.service.user.help.UserRandomGenHelper;
+import org.caffinitas.ohc.OHCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RegisterServiceImpl implements RegisterService {
     @Autowired
     private UserPwdEncoder userPwdEncoder;
+
     @Autowired
     private UserDao userDao;
 
@@ -92,6 +95,21 @@ public class RegisterServiceImpl implements RegisterService {
         userAiDao.saveOrUpdateAiBindInfo(userAiDO, null);
         processAfterUserRegister(user.getId());
         return user.getId();
+    }
+
+    @Override
+    public boolean containsUser(String username) {
+        String s = OHCacheConfig.CACHE.get(username);
+        if(s!=null){
+            return false;
+        }
+        UserDO userByUserName = userDao.getUserByUserName(username);
+        if (userByUserName != null) {
+            OHCacheConfig.CACHE.put(username, "1");
+            return true;
+        }
+
+        return false;
     }
 
 

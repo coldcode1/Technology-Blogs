@@ -24,4 +24,6 @@ public interface RegisterService {
      * @return
      */
     Long registerByWechat(String thirdAccount);
+
+    boolean containsUser(String username);
 }

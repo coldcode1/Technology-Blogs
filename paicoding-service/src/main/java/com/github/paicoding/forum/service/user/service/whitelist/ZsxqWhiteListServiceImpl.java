@@ -17,7 +17,7 @@ import com.github.paicoding.forum.service.user.repository.entity.UserDO;
 import com.github.paicoding.forum.service.user.repository.entity.UserInfoDO;
 import com.github.paicoding.forum.service.user.repository.params.SearchZsxqWhiteParams;
 import com.github.paicoding.forum.service.user.service.ZsxqWhiteListService;
-import com.github.paicoding.forum.service.user.service.help.UserPwdEncoder;
+import com.github.paicoding.forum.service.user.help.UserPwdEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.service.user.service.conf;
+package com.github.paicoding.forum.service.user.conf;
 
 import com.github.paicoding.forum.api.model.enums.ai.AISourceEnum;
 import lombok.Data;

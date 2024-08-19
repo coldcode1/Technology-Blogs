@@ -3,7 +3,7 @@ package com.github.paicoding.forum.service.user.converter;
 import com.github.paicoding.forum.api.model.enums.user.StarSourceEnum;
 import com.github.paicoding.forum.api.model.enums.user.UserAIStatEnum;
 import com.github.paicoding.forum.service.user.repository.entity.UserAiDO;
-import com.github.paicoding.forum.service.user.service.help.UserRandomGenHelper;
+import com.github.paicoding.forum.service.user.help.UserRandomGenHelper;
 import org.apache.commons.lang3.StringUtils;
 
 /**

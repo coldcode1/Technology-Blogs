@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.service.user.service.help;
+package com.github.paicoding.forum.service.user.help;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

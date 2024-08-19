@@ -7,7 +7,7 @@ import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.service.chatai.service.ChatServiceFactory;
 import com.github.paicoding.forum.service.chatai.service.impl.chatgpt.ChatGptIntegration;
 import com.github.paicoding.forum.service.chatai.service.impl.xunfei.XunFeiIntegration;
-import com.github.paicoding.forum.service.user.service.conf.AiConfig;
+import com.github.paicoding.forum.service.user.conf.AiConfig;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;

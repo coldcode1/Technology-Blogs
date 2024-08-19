@@ -9,7 +9,7 @@ import com.github.paicoding.forum.service.statistics.service.RequestCountService
 import com.github.paicoding.forum.service.statistics.service.StatisticsSettingService;
 import com.github.paicoding.forum.service.user.service.UserFootService;
 import com.github.paicoding.forum.service.user.service.UserService;
-import com.github.paicoding.forum.service.user.service.conf.AiConfig;
+import com.github.paicoding.forum.service.user.conf.AiConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

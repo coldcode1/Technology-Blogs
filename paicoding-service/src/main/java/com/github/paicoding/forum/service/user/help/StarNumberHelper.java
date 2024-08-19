@@ -1,6 +1,6 @@
-package com.github.paicoding.forum.service.user.service.help;
+package com.github.paicoding.forum.service.user.help;
 
-import com.github.paicoding.forum.service.user.service.conf.AiConfig;
+import com.github.paicoding.forum.service.user.conf.AiConfig;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

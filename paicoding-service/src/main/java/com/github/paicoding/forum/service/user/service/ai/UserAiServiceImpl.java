@@ -12,7 +12,7 @@ import com.github.paicoding.forum.service.user.repository.dao.UserAiHistoryDao;
 import com.github.paicoding.forum.service.user.repository.entity.UserAiDO;
 import com.github.paicoding.forum.service.user.repository.entity.UserAiHistoryDO;
 import com.github.paicoding.forum.service.user.service.UserAiService;
-import com.github.paicoding.forum.service.user.service.conf.AiConfig;
+import com.github.paicoding.forum.service.user.conf.AiConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
