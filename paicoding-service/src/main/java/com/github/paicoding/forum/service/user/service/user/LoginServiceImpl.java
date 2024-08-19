@@ -155,7 +155,7 @@ public class LoginServiceImpl implements LoginService {
             userAiService.initOrUpdateAiInfo(loginReq);
         } else {
             //4. 走用户注册流程
-            userId = registerService.registerByUserNameAndPassword(loginReq);
+           //  userId = registerService.registerByUserNameAndPassword(loginReq);
         }
         ReqInfoContext.getReqInfo().setUserId(userId);
         return userSessionHelper.genSession(userId);
@@ -172,27 +172,5 @@ public class LoginServiceImpl implements LoginService {
             throw ExceptionUtil.of(StatusEnum.USER_PWD_ERROR);
         }
 
-        String starNumber = loginReq.getStarNumber();
-        // 若传了星球信息，首先进行校验
-        if (StringUtils.isNotBlank(starNumber)) {
-            if (Boolean.FALSE.equals(starNumberHelper.checkStarNumber(starNumber))) {
-                // 星球编号校验不通过，直接抛异常
-                throw ExceptionUtil.of(StatusEnum.USER_STAR_NOT_EXISTS, "星球编号=" + starNumber);
-            }
-
-            UserAiDO userAi = userAiDao.getByStarNumber(starNumber);
-
-            // 如果星球编号已经被绑定了
-            if (userAi != null) {
-                // 判断星球是否已经被绑定了
-                throw ExceptionUtil.of(StatusEnum.USER_STAR_REPEAT, starNumber);
-            }
-        }
-
-        String invitationCode = loginReq.getInvitationCode();
-        if (StringUtils.isNotBlank(invitationCode) && userAiDao.getByInviteCode(invitationCode) == null) {
-            // 填写的邀请码不对, 找不到对应的用户
-            throw ExceptionUtil.of(StatusEnum.UNEXPECT_ERROR, "非法的邀请码【" + starNumber + "】");
-        }
     }
 }

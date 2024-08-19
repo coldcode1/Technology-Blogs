@@ -194,6 +194,7 @@ public class ArticleRestController {
     @MdcDot(bizCode = "#articleId")
     public ResVo<Boolean> favor(@RequestParam(name = "articleId") Long articleId,
                                 @RequestParam(name = "type") Integer type) throws IOException, TimeoutException {
+        // 请注意，这个只会实现，文章/评论的点赞，以及文章的收餐。（包括取消）
         if (log.isDebugEnabled()) {
             log.debug("开始点赞: {}", type);
         }

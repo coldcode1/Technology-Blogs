@@ -3,10 +3,12 @@ package com.github.paicoding.forum.web.front.regist;
 import com.github.paicoding.forum.api.model.vo.ResVo;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.core.util.EmailUtil;
+import com.github.paicoding.forum.service.user.repository.dao.UserDao;
 import com.github.paicoding.forum.service.user.service.RegisterService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,9 +30,13 @@ public class RegistRestController {
     @Autowired
     private RedisTemplate<String, String> redisTemplate;
 
+    @Qualifier("userDao")
+    @Autowired
+    private UserDao userDao;
+
 
     @PostMapping("/sendcode")
-    public ResVo<Boolean> sendCode(@RequestParam(name = "userName") String userName,
+    public ResVo<Boolean> sendCode(@RequestParam(name = "username") String userName,
                                  @RequestParam(name = "email") String email,
                                  HttpServletRequest httpServletRequest){
 
@@ -50,7 +56,7 @@ public class RegistRestController {
         }
 
         String title = "欢迎注册技术博客园";
-        String content = "您的验证码是："+generateCode(6);
+        String content = "您的验证码是："+generateCode(6)+" 。欢迎帅气美丽的你注册技术博客园,,输入验证码,便可成为尊敬的技术博客大王~一起在技术博客园里发展自己的技术吧~";
 
         // 发生验证码
         if(!EmailUtil.sendMailByRabbitMQ(title,email,content)){
@@ -71,7 +77,7 @@ public class RegistRestController {
         return code.toString();
     }
 
-    @PostMapping("/registeruser")
+    @PostMapping("/user")
     public ResVo<Boolean> regist(@RequestParam(name = "username") String username,
                                  @RequestParam(name = "password") String password,
                                  @RequestParam(name = "email") String email,
@@ -87,12 +93,19 @@ public class RegistRestController {
         String trueCode = redisTemplate.opsForValue().get(remoteAddr + username);
 
         if(trueCode==null){
-            return ResVo.fail(StatusEnum.REGIST_USER_FAILED, "验证码已过期，请重新获取");
+            return ResVo.fail(StatusEnum.REGIST_USER_FAILED, "请重新获取验证码");
         }
 
         if(!StringUtils.equals(trueCode, code)){
             return ResVo.fail(StatusEnum.REGIST_USER_FAILED, "验证码错误");
         }
+
+        if(redisTemplate.opsForValue().get(username)!=null){
+            return ResVo.fail(StatusEnum.REGIST_USER_FAILED, "该用户已经存在");
+        }
+        redisTemplate.opsForValue().set(username, "1", 60);
+
+        registerService.registerByUserNameAndPassword(username, password, email);
 
         return ResVo.ok(true);
     }

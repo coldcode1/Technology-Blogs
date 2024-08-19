@@ -2,10 +2,7 @@ package com.github.paicoding.forum.service.user.service.user;
 
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;
 import com.github.paicoding.forum.api.model.enums.user.LoginTypeEnum;
-import com.github.paicoding.forum.api.model.exception.ExceptionUtil;
-import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.notify.NotifyMsgEvent;
-import com.github.paicoding.forum.api.model.vo.user.UserPwdLoginReq;
 import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
 import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.core.util.TransactionUtil;
@@ -18,6 +15,7 @@ import com.github.paicoding.forum.service.user.repository.entity.UserInfoDO;
 import com.github.paicoding.forum.service.user.service.RegisterService;
 import com.github.paicoding.forum.service.user.help.UserPwdEncoder;
 import com.github.paicoding.forum.service.user.help.UserRandomGenHelper;
+import lombok.extern.slf4j.Slf4j;
 import org.caffinitas.ohc.OHCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author YiHui
  * @date 2023/6/26
  */
+@Slf4j
 @Service
 public class RegisterServiceImpl implements RegisterService {
     @Autowired
@@ -42,17 +41,11 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long registerByUserNameAndPassword(UserPwdLoginReq loginReq) {
+    public Long registerByUserNameAndPassword(String username, String password, String starNumber) {
         // 1. 判断用户名是否准确
-        UserDO user = userDao.getUserByUserName(loginReq.getUsername());
-        if (user != null) {
-            throw ExceptionUtil.of(StatusEnum.USER_LOGIN_NAME_REPEAT, loginReq.getUsername());
-        }
-
-        // 2. 保存用户登录信息
-        user = new UserDO();
-        user.setUserName(loginReq.getUsername());
-        user.setPassword(userPwdEncoder.encPwd(loginReq.getPassword()));
+        UserDO user = new UserDO();
+        user.setUserName(username);
+        user.setPassword(userPwdEncoder.encPwd(password));
         user.setThirdAccountId("");
         // 用户名密码注册
         user.setLoginType(LoginTypeEnum.USER_PWD.getType());
@@ -61,13 +54,13 @@ public class RegisterServiceImpl implements RegisterService {
         // 3. 保存用户信息
         UserInfoDO userInfo = new UserInfoDO();
         userInfo.setUserId(user.getId());
-        userInfo.setUserName(loginReq.getUsername());
+        userInfo.setUserName("用户" + user.getUserName());
         userInfo.setPhoto(UserRandomGenHelper.genAvatar());
         userDao.save(userInfo);
 
         // 4. 保存ai相互信息
-        UserAiDO userAiDO = UserAiConverter.initAi(user.getId(), loginReq.getStarNumber());
-        userAiDao.saveOrUpdateAiBindInfo(userAiDO, loginReq.getInvitationCode());
+        UserAiDO userAiDO = UserAiConverter.initAi(user.getId(),"");
+        userAiDao.saveOrUpdateAiBindInfo(userAiDO, "999999");
         processAfterUserRegister(user.getId());
         return user.getId();
     }
@@ -99,13 +92,15 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public boolean containsUser(String username) {
-        String s = OHCacheConfig.CACHE.get(username);
+        log.info("containsUser:{}", username);
+        OHCache<String, String> usernameCache = OHCacheConfig.USERNAME_CACHE;
+        String s = OHCacheConfig.USERNAME_CACHE.get(username);
         if(s!=null){
             return false;
         }
         UserDO userByUserName = userDao.getUserByUserName(username);
         if (userByUserName != null) {
-            OHCacheConfig.CACHE.put(username, "1");
+            OHCacheConfig.USERNAME_CACHE.put(username, "1");
             return true;
         }
 

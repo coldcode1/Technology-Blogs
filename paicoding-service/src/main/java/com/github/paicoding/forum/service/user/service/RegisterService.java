@@ -1,6 +1,7 @@
 package com.github.paicoding.forum.service.user.service;
 
 import com.github.paicoding.forum.api.model.vo.user.UserPwdLoginReq;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 用户注册服务
@@ -15,7 +16,7 @@ public interface RegisterService {
      * @param loginReq
      * @return
      */
-    Long registerByUserNameAndPassword(UserPwdLoginReq loginReq);
+    Long registerByUserNameAndPassword(String username, String password, String starNumber);
 
     /**
      * 通过微信公众号进行注册

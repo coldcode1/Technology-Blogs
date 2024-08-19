@@ -31,6 +31,7 @@ public class NotifyMsgListener<T> implements ApplicationListener<NotifyMsgEvent<
     private final CommentReadService commentReadService;
 
     private final NotifyMsgDao notifyMsgDao;
+
     public NotifyMsgListener(ArticleReadService articleReadService,
                              CommentReadService commentReadService,
                              NotifyMsgDao notifyMsgDao) {
@@ -49,7 +50,7 @@ public class NotifyMsgListener<T> implements ApplicationListener<NotifyMsgEvent<
             case REPLY:
                 saveReplyNotify((NotifyMsgEvent<CommentDO>) msgEvent);
                 break;
-            case PRAISE:
+            case PRAISE:        // 注意，下面的没有break，所以点赞和收藏是走的一个case。
             case COLLECT:
                 saveArticleNotify((NotifyMsgEvent<UserFootDO>) msgEvent);
                 break;
