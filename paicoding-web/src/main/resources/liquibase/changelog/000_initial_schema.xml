@@ -113,4 +113,11 @@
     <changeSet id="00000000000026" author="coldcode1">
         <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/init_data_240817.sql"/>
     </changeSet>
+
+    <changeSet id="00000000000027" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240818.sql"/>
+    </changeSet>
+
+
+
 </databaseChangeLog>

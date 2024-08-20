@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.web.front.regist;
+package com.github.paicoding.forum.web.front.register;
 
 import com.github.paicoding.forum.api.model.vo.ResVo;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
