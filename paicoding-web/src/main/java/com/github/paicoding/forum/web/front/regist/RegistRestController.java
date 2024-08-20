@@ -2,8 +2,11 @@ package com.github.paicoding.forum.web.front.regist;
 
 import com.github.paicoding.forum.api.model.vo.ResVo;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
+import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
 import com.github.paicoding.forum.core.util.EmailUtil;
+import com.github.paicoding.forum.core.util.SessionUtil;
 import com.github.paicoding.forum.service.user.repository.dao.UserDao;
+import com.github.paicoding.forum.service.user.service.LoginService;
 import com.github.paicoding.forum.service.user.service.RegisterService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -16,8 +19,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 import java.security.SecureRandom;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @RestController
@@ -55,14 +60,15 @@ public class RegistRestController {
             return ResVo.fail(StatusEnum.REGIST_MAIL_FAILED, "验证码已发送过啦，1分钟后重试。");
         }
 
+        String trueCode = generateCode(6);
         String title = "欢迎注册技术博客园";
-        String content = "您的验证码是："+generateCode(6)+" 。欢迎帅气美丽的你注册技术博客园,,输入验证码,便可成为尊敬的技术博客大王~一起在技术博客园里发展自己的技术吧~";
+        String content = "您的验证码是："+generateCode(6)+trueCode+" 。欢迎帅气美丽的你注册技术博客园,,输入验证码,便可成为尊敬的技术博客大王~一起在技术博客园里发展自己的技术吧~";
 
         // 发生验证码
         if(!EmailUtil.sendMailByRabbitMQ(title,email,content)){
             return ResVo.fail(StatusEnum.REGIST_MAIL_FAILED, "验证码发送失败");
         }
-        redisTemplate.opsForValue().set(remoteAddr+ userName, "1", 60);
+        redisTemplate.opsForValue().set(remoteAddr+ userName, trueCode, 60, TimeUnit.SECONDS);
         return ResVo.ok(true);
     }
 
@@ -82,7 +88,8 @@ public class RegistRestController {
                                  @RequestParam(name = "password") String password,
                                  @RequestParam(name = "email") String email,
                                  @RequestParam(name = "sendcode") String code,
-                                 HttpServletRequest httpServletRequest){
+                                 HttpServletRequest httpServletRequest,
+                                 HttpServletResponse response){
 
         // todo 0 校验用户名/密码/邮箱是否合法
         if(Objects.isNull(username) || Objects.isNull(email)){
@@ -96,16 +103,18 @@ public class RegistRestController {
             return ResVo.fail(StatusEnum.REGIST_USER_FAILED, "请重新获取验证码");
         }
 
-        if(!StringUtils.equals(trueCode, code)){
+        if(!StringUtils.equals(trueCode, code.trim())){
             return ResVo.fail(StatusEnum.REGIST_USER_FAILED, "验证码错误");
         }
 
-        if(redisTemplate.opsForValue().get(username)!=null){
+        if(OHCacheConfig.USERNAME_CACHE.get(username)!=null){
             return ResVo.fail(StatusEnum.REGIST_USER_FAILED, "该用户已经存在");
         }
-        redisTemplate.opsForValue().set(username, "1", 60);
+        OHCacheConfig.USERNAME_CACHE.put(username, "1");
 
-        registerService.registerByUserNameAndPassword(username, password, email);
+        String session = registerService.registerByUserNameAndPassword(username, password, email);
+
+        response.addCookie(SessionUtil.newCookie(LoginService.SESSION_KEY, session));
 
         return ResVo.ok(true);
     }

@@ -1,5 +1,6 @@
 package com.github.paicoding.forum.service.user.service.user;
 
+import com.github.paicoding.forum.api.model.context.ReqInfoContext;
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;
 import com.github.paicoding.forum.api.model.enums.user.LoginTypeEnum;
 import com.github.paicoding.forum.api.model.vo.notify.NotifyMsgEvent;
@@ -7,6 +8,7 @@ import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
 import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.core.util.TransactionUtil;
 import com.github.paicoding.forum.service.user.converter.UserAiConverter;
+import com.github.paicoding.forum.service.user.help.UserSessionHelper;
 import com.github.paicoding.forum.service.user.repository.dao.UserAiDao;
 import com.github.paicoding.forum.service.user.repository.dao.UserDao;
 import com.github.paicoding.forum.service.user.repository.entity.UserAiDO;
@@ -30,6 +32,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 public class RegisterServiceImpl implements RegisterService {
+
+    @Autowired
+    private UserSessionHelper userSessionHelper;
+
     @Autowired
     private UserPwdEncoder userPwdEncoder;
 
@@ -41,7 +47,7 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long registerByUserNameAndPassword(String username, String password, String starNumber) {
+    public String registerByUserNameAndPassword(String username, String password, String starNumber) {
         // 1. 判断用户名是否准确
         UserDO user = new UserDO();
         user.setUserName(username);
@@ -62,7 +68,9 @@ public class RegisterServiceImpl implements RegisterService {
         UserAiDO userAiDO = UserAiConverter.initAi(user.getId(),"");
         userAiDao.saveOrUpdateAiBindInfo(userAiDO, "999999");
         processAfterUserRegister(user.getId());
-        return user.getId();
+        ReqInfoContext.getReqInfo().setUserId(user.getId());
+        String session = userSessionHelper.genSession(user.getId());
+        return session;
     }
 
     @Override
@@ -87,13 +95,13 @@ public class RegisterServiceImpl implements RegisterService {
         UserAiDO userAiDO = UserAiConverter.initAi(user.getId());
         userAiDao.saveOrUpdateAiBindInfo(userAiDO, null);
         processAfterUserRegister(user.getId());
+
         return user.getId();
     }
 
     @Override
     public boolean containsUser(String username) {
         log.info("containsUser:{}", username);
-        OHCache<String, String> usernameCache = OHCacheConfig.USERNAME_CACHE;
         String s = OHCacheConfig.USERNAME_CACHE.get(username);
         if(s!=null){
             return false;
