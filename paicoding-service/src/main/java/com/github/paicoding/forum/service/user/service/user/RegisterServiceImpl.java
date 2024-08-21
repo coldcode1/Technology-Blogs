@@ -4,7 +4,7 @@ import com.github.paicoding.forum.api.model.context.ReqInfoContext;
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;
 import com.github.paicoding.forum.api.model.enums.user.LoginTypeEnum;
 import com.github.paicoding.forum.api.model.vo.notify.NotifyMsgEvent;
-import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
+import com.github.paicoding.forum.core.util.EmailUtil;
 import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.core.util.TransactionUtil;
 import com.github.paicoding.forum.service.user.converter.UserAiConverter;
@@ -18,10 +18,16 @@ import com.github.paicoding.forum.service.user.service.RegisterService;
 import com.github.paicoding.forum.service.user.help.UserPwdEncoder;
 import com.github.paicoding.forum.service.user.help.UserRandomGenHelper;
 import lombok.extern.slf4j.Slf4j;
-import org.caffinitas.ohc.OHCache;
+import org.apache.commons.lang3.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户注册服务
@@ -45,10 +51,13 @@ public class RegisterServiceImpl implements RegisterService {
     @Autowired
     private UserAiDao userAiDao;
 
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String registerByUserNameAndPassword(String username, String password, String starNumber) {
-        // 1. 判断用户名是否准确
+
         UserDO user = new UserDO();
         user.setUserName(username);
         user.setPassword(userPwdEncoder.encPwd(password));
@@ -71,6 +80,56 @@ public class RegisterServiceImpl implements RegisterService {
         ReqInfoContext.getReqInfo().setUserId(user.getId());
         String session = userSessionHelper.genSession(user.getId());
         return session;
+    }
+
+    @Override
+    public String sendRegisterCode(String userName, String email, String remoteAddr) {
+        log.info("开始发送验证码");
+        // todo 0 校验用户名和邮箱是否合法
+        if(StringUtils.isBlank(userName) || StringUtils.isBlank(email)){
+            return "用户名和邮箱不能为空";
+        }
+
+        if(containsUser(userName)){
+            return "用户已存在";
+        }
+
+        if(redisTemplate.opsForValue().get(remoteAddr+ userName)!=null){
+            return "验证码已发送过啦，1分钟后重试。";
+        }
+
+        String trueCode = generateCode(6);
+        String title = "欢迎注册技术博客园";
+        String content = "您的验证码是："+ trueCode + " . 欢迎帅气美丽的你注册技术博客园,,输入验证码,便可成为尊敬的技术博客大王~一起在技术博客园里发展自己的技术吧~";
+
+        // 发生验证码
+        if(!EmailUtil.sendMailByRabbitMQ(title,email,content)){
+            return "验证码发送失败";
+        }
+        redisTemplate.opsForValue().set(remoteAddr+ userName, trueCode, 60, TimeUnit.SECONDS);
+        return "ok";
+    }
+
+    @Override
+    public String registerCheck(String username, String remoteAddr, String password, String email, String code ) {
+        // todo 0 校验用户名/密码/邮箱是否合法
+        if(StringUtils.isBlank(username) || StringUtils.isBlank(email) || StringUtils.isBlank(password) || StringUtils.isBlank(code)){
+            return  "注册参数不能为空！";
+        }
+        String trueCode = redisTemplate.opsForValue().get(remoteAddr + username);
+        if(trueCode==null){
+            return "请重新获取验证码!";
+        }
+        // 验证码+邮箱双重一致。
+        if(!StringUtils.equals(trueCode+email, code)){
+            return "验证码错误";
+        }
+        if(redisTemplate.opsForValue().get(username)!=null){
+            return "该用户已经存在";
+        }
+        redisTemplate.opsForValue().set("user_"+username, "1");
+        return "ok";
+
     }
 
     @Override
@@ -99,22 +158,18 @@ public class RegisterServiceImpl implements RegisterService {
         return user.getId();
     }
 
-    @Override
-    public boolean containsUser(String username) {
-        log.info("containsUser:{}", username);
-        String s = OHCacheConfig.USERNAME_CACHE.get(username);
-        if(s!=null){
-            return false;
-        }
-        UserDO userByUserName = userDao.getUserByUserName(username);
-        if (userByUserName != null) {
-            OHCacheConfig.USERNAME_CACHE.put(username, "1");
+
+    public boolean containsUser(String userName) {
+        Object o = redisTemplate.opsForValue().get(userName);
+        if(o!=null){
             return true;
         }
-
+        if (userDao.getUserByUserName(userName) != null) {
+            redisTemplate.opsForValue().set(userName, "1");
+            return true;
+        }
         return false;
     }
-
 
     /**
      * 用户注册完毕之后触发的动作
@@ -129,5 +184,16 @@ public class RegisterServiceImpl implements RegisterService {
                 SpringUtil.publishEvent(new NotifyMsgEvent<>(this, NotifyTypeEnum.REGISTER, userId));
             }
         });
+    }
+
+    private static String generateCode(int length) {
+        // 使用 SecureRandom 生成更安全的随机数
+        SecureRandom random = new SecureRandom();
+        StringBuilder code = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int digit = random.nextInt(10); // 生成 0 到 9 的随机整数
+            code.append(digit);
+        }
+        return code.toString();
     }
 }

@@ -118,6 +118,10 @@
         <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240818.sql"/>
     </changeSet>
 
+    <changeSet id="00000000000028" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240819.sql"/>
+    </changeSet>
+
 
 
 </databaseChangeLog>

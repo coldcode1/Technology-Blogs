@@ -40,13 +40,16 @@ public class GlobalViewInterceptor implements AsyncHandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 如果被拦截的是一个方法
         if (handler instanceof HandlerMethod) {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
+            // 得到拦截器上面的注解
             Permission permission = handlerMethod.getMethod().getAnnotation(Permission.class);
             if (permission == null) {
+                // 方法上为空，找对应的bean上面的注解。
                 permission = handlerMethod.getBeanType().getAnnotation(Permission.class);
             }
-
+            // 仍然为空，说明，不需要拦截。
             if (permission == null || permission.role() == UserRole.ALL) {
                 if (ReqInfoContext.getReqInfo() != null) {
                     // 用户活跃度更新
@@ -55,14 +58,19 @@ public class GlobalViewInterceptor implements AsyncHandlerInterceptor {
                 return true;
             }
 
+            // ReqInfoContext.getReqInfo() == null 说明用户未登录 这是一个threadlocal的线程变量
             if (ReqInfoContext.getReqInfo() == null || ReqInfoContext.getReqInfo().getUserId() == null) {
+
+                // 访问需要登录的rest接口时，直接返回错误信息
                 if (handlerMethod.getMethod().getAnnotation(ResponseBody.class) != null
                         || handlerMethod.getMethod().getDeclaringClass().getAnnotation(RestController.class) != null) {
-                    // 访问需要登录的rest接口
+
                     response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
                     response.getWriter().println(JsonUtil.toStr(ResVo.fail(StatusEnum.FORBID_NOTLOGIN)));
                     response.getWriter().flush();
                     return false;
+
+                    // 访问需要api的界面，直接跳转到登录界面
                 } else if (request.getRequestURI().startsWith("/api/admin/") || request.getRequestURI().startsWith("/admin/")) {
                     response.sendRedirect("/admin");
                 } else {

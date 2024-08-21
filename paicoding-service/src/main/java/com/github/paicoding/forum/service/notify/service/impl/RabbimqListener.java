@@ -1,6 +1,7 @@
 package com.github.paicoding.forum.service.notify.service.impl;
 
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;
+import com.github.paicoding.forum.core.cache.RedisClient;
 import com.github.paicoding.forum.core.common.CommonConstants;
 import com.github.paicoding.forum.core.config.RabbitmqProperties;
 import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnection;
@@ -8,6 +9,7 @@ import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnectionPool;
 import com.github.paicoding.forum.core.util.JsonUtil;
 import com.github.paicoding.forum.service.notify.service.NotifyService;
 import com.github.paicoding.forum.service.notify.service.RabbitmqService;
+import com.github.paicoding.forum.service.statistics.constants.CountConstants;
 import com.github.paicoding.forum.service.user.repository.entity.UserFootDO;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
@@ -62,9 +64,15 @@ public class RabbimqListener {
             log.info("Consumer msg: {}", message);
 
             if(routingKey.equals(CommonConstants.QUERE_KEY_COLLECT)){
-                notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.COLLECT);
+                UserFootDO foot = JsonUtil.toObj(message, UserFootDO.class);
+                notifyService.saveArticleNotify(foot, NotifyTypeEnum.COLLECT);
+                RedisClient.hIncr(CountConstants.ARTICLE_STATISTIC_INFO + foot.getDocumentId(), CountConstants.COLLECTION_COUNT, 1);
+                RedisClient.hIncr(CountConstants.USER_STATISTIC_INFO + foot.getDocumentUserId(), CountConstants.COLLECTION_COUNT, 1);
             }else if (routingKey.equals(CommonConstants.QUERE_KEY_PRAISE)){
-                notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.PRAISE);
+                UserFootDO foot = JsonUtil.toObj(message, UserFootDO.class);
+                notifyService.saveArticleNotify(foot, NotifyTypeEnum.PRAISE);
+                RedisClient.hIncr(CountConstants.USER_STATISTIC_INFO + foot.getDocumentUserId(), CountConstants.PRAISE_COUNT, 1);
+                RedisClient.hIncr(CountConstants.ARTICLE_STATISTIC_INFO + foot.getDocumentId(), CountConstants.PRAISE_COUNT, 1);
             }
         } catch (Exception e) {
             log.info("错误信息:{}", e.getMessage());

@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.service.statistics.listener;
+package com.github.paicoding.forum.web.hook.listener;
 
 import com.github.paicoding.forum.api.model.enums.ArticleEventEnum;
 import com.github.paicoding.forum.api.model.event.ArticleMsgEvent;

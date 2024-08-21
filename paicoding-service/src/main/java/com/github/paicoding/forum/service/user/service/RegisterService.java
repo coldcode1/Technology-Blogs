@@ -18,6 +18,18 @@ public interface RegisterService {
      */
     String registerByUserNameAndPassword(String username, String password, String starNumber);
 
+
+    String sendRegisterCode(String userName, String email, String remoteAddr);
+
+    /**
+     * 注册校验
+     * @param username
+     * @param password
+     * @param starNumber
+     * @return
+     */
+    String registerCheck(String username, String remoteAddr,  String password,  String email, String code);
+
     /**
      * 通过微信公众号进行注册
      *
@@ -25,6 +37,4 @@ public interface RegisterService {
      * @return
      */
     Long registerByWechat(String thirdAccount);
-
-    boolean containsUser(String username);
 }
