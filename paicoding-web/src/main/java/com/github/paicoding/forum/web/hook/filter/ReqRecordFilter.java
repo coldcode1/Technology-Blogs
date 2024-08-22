@@ -8,8 +8,9 @@ import com.github.paicoding.forum.core.util.CrossUtil;
 import com.github.paicoding.forum.core.util.EnvUtil;
 import com.github.paicoding.forum.core.util.IpUtil;
 import com.github.paicoding.forum.core.util.SessionUtil;
-import com.github.paicoding.forum.core.util.SpringUtil;
-import com.github.paicoding.forum.service.sitemap.service.impl.SitemapServiceImpl;
+
+import com.github.paicoding.forum.service.sitemap.service.SitemapService;
+
 import com.github.paicoding.forum.service.statistics.service.StatisticsSettingService;
 import com.github.paicoding.forum.service.user.service.LoginService;
 import com.github.paicoding.forum.web.global.GlobalInitService;
@@ -45,8 +46,8 @@ import java.util.concurrent.TimeUnit;
  * @date 2022/7/6
  */
 @Slf4j
-@WebFilter(urlPatterns = "/*", filterName = "reqRecordFilter", asyncSupported = true)
 @Component
+@WebFilter(urlPatterns = "/*", filterName = "reqRecordFilter", asyncSupported = true)
 public class ReqRecordFilter implements Filter {
     private static Logger REQ_LOG = LoggerFactory.getLogger("req");
     /**
@@ -59,6 +60,9 @@ public class ReqRecordFilter implements Filter {
 
     @Autowired
     private StatisticsSettingService statisticsSettingService;
+
+    @Autowired
+    private SitemapService sitemapService;
 
     @Override
     public void init(FilterConfig filterConfig) {
@@ -74,6 +78,7 @@ public class ReqRecordFilter implements Filter {
             request = this.initReqInfo((HttpServletRequest) servletRequest, (HttpServletResponse) servletResponse);
             stopWatch.stop();
             stopWatch.start("cors");
+            // 跨域问题
             CrossUtil.buildCors(request, (HttpServletResponse) servletResponse);
             stopWatch.stop();
             stopWatch.start("业务执行");
@@ -142,10 +147,15 @@ public class ReqRecordFilter implements Filter {
             stopWatch.stop();
 
             ReqInfoContext.addReqInfo(reqInfo);
-            stopWatch.start("pv/uv站点统计");
-            // 更新uv/pv计数
-            AsyncUtil.execute(() -> SpringUtil.getBean(SitemapServiceImpl.class).saveVisitInfo(reqInfo.getClientIp(), reqInfo.getPath()));
-            stopWatch.stop();
+
+            String ajaxHeader = request.getHeader("X-Requested-With");
+            if (!"XMLHttpRequest".equals(ajaxHeader)) {
+                // 如果不是 AJAX 请求，进行 PV 统计
+                stopWatch.start("pv/uv站点统计");
+                // 更新uv/pv计数
+                AsyncUtil.execute(() -> sitemapService.saveVisitInfo(reqInfo.getClientIp(), reqInfo.getPath()));
+                stopWatch.stop();
+            }
 
             stopWatch.start("回写traceId");
             // 返回头中记录traceId
