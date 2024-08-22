@@ -7,6 +7,7 @@ import com.github.paicoding.forum.api.model.exception.ExceptionUtil;
 import com.github.paicoding.forum.api.model.vo.article.ArticlePostReq;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import com.github.paicoding.forum.core.cache.RedisClient;
 import com.github.paicoding.forum.core.permission.UserRole;
 import com.github.paicoding.forum.core.util.NumUtil;
 import com.github.paicoding.forum.core.util.SpringUtil;
@@ -21,6 +22,7 @@ import com.github.paicoding.forum.service.user.service.AuthorWhiteListService;
 import com.github.paicoding.forum.service.user.service.UserFootService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -57,6 +59,9 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
     @Autowired
     private AuthorWhiteListService articleWhiteListService;
 
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+
     public ArticleWriteServiceImpl(ArticleDao articleDao, ArticleTagDao articleTagDao) {
         this.articleDao = articleDao;
         this.articleTagDao = articleTagDao;
@@ -81,6 +86,8 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
                     log.info("文章发布成功! title={}", req.getTitle());
                 } else {
                     articleId = updateArticle(article, content, req.getTagIds());
+                    RedisClient.del("Blogs_ArticleDTO_" + articleId);
+                    // redisTemplate.opsForValue().getAndDelete("Blogs_ArticleDTO_" + articleId);
                     log.info("文章更新成功！ title={}", article.getTitle());
                 }
                 return articleId;
@@ -180,6 +187,8 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
         if (dto != null && dto.getDeleted() != YesOrNoEnum.YES.getCode()) {
             dto.setDeleted(YesOrNoEnum.YES.getCode());
             articleDao.updateById(dto);
+            redisTemplate.opsForValue().getAndDelete("Blogs_ArticleDTO_" + articleId);
+
 
             // 发布文章删除事件
             SpringUtil.publishEvent(new ArticleMsgEvent<>(this, ArticleEventEnum.DELETE, dto));

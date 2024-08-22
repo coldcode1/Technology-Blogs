@@ -58,7 +58,7 @@ public class UserFootServiceImpl implements UserFootService {
      */
     @Override
     public UserFootDO saveOrUpdateUserFoot(DocumentTypeEnum documentType, Long documentId, Long authorId, Long userId, OperateTypeEnum operateTypeEnum) {
-        // 查询是否有该足迹；有则更新，没有则插入
+        // 查询是否有该足迹；有则更新，没有则插入----似乎都是评论才会走这个逻辑，那倒不奇怪
         UserFootDO readUserFootDO = userFootDao.getByDocumentAndUserId(documentId, documentType.getCode(), userId);
         if (readUserFootDO == null) {
             readUserFootDO = new UserFootDO();
@@ -69,6 +69,7 @@ public class UserFootServiceImpl implements UserFootService {
             setUserFootStat(readUserFootDO, operateTypeEnum);
             userFootDao.save(readUserFootDO);
         } else if (setUserFootStat(readUserFootDO, operateTypeEnum)) {
+            // Q:如果是阅读，是否有必要走入这个Foot更新步骤??
             readUserFootDO.setUpdateTime(new Date());
             userFootDao.updateById(readUserFootDO);
         }

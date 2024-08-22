@@ -113,7 +113,7 @@ public class ArticleReadServiceImpl implements ArticleReadService {
         if (article == null) {
             throw ExceptionUtil.of(StatusEnum.ARTICLE_NOT_EXISTS, articleId);
         }
-        // 更新分类相关信息
+        // 查询本地缓存, 更新分类相关信息
         CategoryDTO category = article.getCategory();
         category.setCategory(categoryService.queryCategoryName(category.getCategoryId()));
 
@@ -131,6 +131,7 @@ public class ArticleReadServiceImpl implements ArticleReadService {
      */
     @Override
     public ArticleDTO queryFullArticleInfo(Long articleId, Long readUser) {
+        // 查询文章详情. 采用缓存redis保存，如果缓存中没有，会从数据库中查询
         ArticleDTO article = queryDetailArticleInfo(articleId);
 
         // 文章阅读计数+1

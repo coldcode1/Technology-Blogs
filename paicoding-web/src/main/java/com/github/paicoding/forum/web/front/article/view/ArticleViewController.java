@@ -79,6 +79,7 @@ public class ArticleViewController extends BaseViewController {
     public String edit(@RequestParam(required = false) Long articleId, Model model) {
         ArticleEditVo vo = new ArticleEditVo();
         if (articleId != null) {
+            // 查询文章详情, 内部采用了redis缓存。如果缓存中没有，会从数据库中查询
             ArticleDTO article = articleService.queryDetailArticleInfo(articleId);
             vo.setArticle(article);
             if (!Objects.equals(article.getAuthor(), ReqInfoContext.getReqInfo().getUserId())) {

@@ -4,7 +4,7 @@ rabbitmq:
   username: admin
   passport: 199810dong
   virtualhost: /
-  switchFlag: true
+  switchFlag: false
   pool_size: 10
   #  RabbitMQ会发送一个确认（acknowledgment）给生产者
   publisher-confirms: true

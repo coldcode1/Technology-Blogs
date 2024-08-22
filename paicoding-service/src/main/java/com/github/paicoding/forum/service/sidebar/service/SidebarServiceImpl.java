@@ -156,41 +156,12 @@ public class SidebarServiceImpl implements SidebarService {
     @Override
     @Cacheable(key = "'sideBar_' + #articleId", cacheManager = "caffeineCacheManager", cacheNames = "article")
     public List<SideBarDTO> queryArticleDetailSidebarList(Long author, Long articleId) {
-        List<SideBarDTO> list = new ArrayList<>(2);
-        // 不能直接使用 pdfSideBar()的方式调用，会导致缓存不生效
-        list.add(SpringUtil.getBean(SidebarServiceImpl.class).pdfSideBar());
+        List<SideBarDTO> list = new ArrayList<>(1);
         list.add(recommendByAuthor(author, articleId, PageParam.DEFAULT_PAGE_SIZE));
         return list;
     }
 
-    /**
-     * PDF 优质资源
-     *
-     * @return
-     */
-    @Cacheable(key = "'sideBar'", cacheManager = "caffeineCacheManager", cacheNames = "article")
-    public SideBarDTO pdfSideBar() {
-        List<ConfigDTO> pdfList = configService.getConfigList(ConfigTypeEnum.PDF);
-        List<SideBarItemDTO> items = new ArrayList<>(pdfList.size());
-        pdfList.forEach(configDTO -> {
-            SideBarItemDTO dto = new SideBarItemDTO();
-            dto.setName(configDTO.getName());
-            dto.setUrl(configDTO.getJumpUrl());
-            dto.setImg(configDTO.getBannerUrl());
-            RateVisitDTO visit;
-            if (StringUtils.isNotBlank(configDTO.getExtra())) {
-                visit = (JsonUtil.toObj(configDTO.getExtra(), RateVisitDTO.class));
-            } else {
-                visit = new RateVisitDTO();
-            }
-            visit.incrVisit();
-            // 更新阅读计数
-            configService.updateVisit(configDTO.getId(), JsonUtil.toStr(visit));
-            dto.setVisit(visit);
-            items.add(dto);
-        });
-        return new SideBarDTO().setTitle("优质PDF").setItems(items).setStyle(SidebarStyleEnum.PDF.getStyle());
-    }
+
 
 
     /**

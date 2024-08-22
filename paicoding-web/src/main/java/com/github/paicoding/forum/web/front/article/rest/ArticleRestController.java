@@ -209,13 +209,16 @@ public class ArticleRestController {
             return ResVo.fail(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "文章不存在!");
         }
 
+        // 在此处存储用户对该文章是否点赞、收藏、浏览等纪录
         UserFootDO foot = userFootService.saveOrUpdateUserFoot(DocumentTypeEnum.ARTICLE, articleId, article.getUserId(),
                 ReqInfoContext.getReqInfo().getUserId(),
                 operate);
+
+
         // 点赞、收藏消息
         NotifyTypeEnum notifyType = OperateTypeEnum.getNotifyType(operate);
-
         // 点赞消息走 RabbitMQ，其它走 Java 内置消息机制
+        // 做了两件事：1.发送信息，通知作者，存储了notifyMsgDao。 2.对文章的点赞、收藏数进行更新
         if (notifyType.equals(NotifyTypeEnum.PRAISE)  && rabbitmqProperties.getSwitchFlag()) {
             rabbitmqService.publishMsg(
                     CommonConstants.EXCHANGE_NAME_TOPIC,

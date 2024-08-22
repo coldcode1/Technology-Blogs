@@ -40,7 +40,7 @@ public class ArticleListViewController extends BaseViewController {
     public String categoryList(@PathVariable("category") String category, Model model) {
         Long categoryId = categoryService.queryCategoryId(category);
 
-        // todo : 将article id 放入Redis中的zset中，实现根据文章的点赞数、评论数等进行排序。具体文章内容放入
+        // todo : 将article id 放入Redis中的zset中，实现根据文章的点赞数、评论数等进行排序。具体文章内容放入OHC
         PageListVo<ArticleDTO> list = categoryId != null ? articleService.queryArticlesByCategory(categoryId, PageParam.newPageInstance()) : PageListVo.emptyVo();
         ArticleListVo vo = new ArticleListVo();
         vo.setArchives(category);
