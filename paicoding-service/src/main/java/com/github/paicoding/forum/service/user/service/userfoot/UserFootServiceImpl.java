@@ -5,13 +5,17 @@ import com.github.paicoding.forum.api.model.enums.OperateTypeEnum;
 import com.github.paicoding.forum.api.model.vo.PageParam;
 import com.github.paicoding.forum.api.model.vo.user.dto.SimpleUserInfoDTO;
 import com.github.paicoding.forum.api.model.vo.user.dto.UserFootStatisticDTO;
+import com.github.paicoding.forum.core.cache.RedisClient;
 import com.github.paicoding.forum.service.article.service.ArticleReadService;
 import com.github.paicoding.forum.service.comment.repository.entity.CommentDO;
 import com.github.paicoding.forum.service.comment.service.CommentReadService;
+import com.github.paicoding.forum.service.statistics.constants.CountConstants;
 import com.github.paicoding.forum.service.user.repository.dao.UserFootDao;
 import com.github.paicoding.forum.service.user.repository.entity.UserFootDO;
 import com.github.paicoding.forum.service.user.service.UserFootService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -35,6 +39,9 @@ public class UserFootServiceImpl implements UserFootService {
 
     @Autowired
     private CommentReadService commentReadService;
+    @Qualifier("redisTemplate")
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     public UserFootServiceImpl(UserFootDao userFootDao) {
         this.userFootDao = userFootDao;
@@ -139,7 +146,12 @@ public class UserFootServiceImpl implements UserFootService {
     }
 
     @Override
-    public List<SimpleUserInfoDTO> queryArticlePraisedUsers(Long articleId) {
+    public List<SimpleUserInfoDTO> queryArticlePraisedUsers(Long articleId, Integer praiseCount) {
+        List<SimpleUserInfoDTO> simpleUserInfoDTOS = userFootDao.listDocumentPraisedUsers(articleId, DocumentTypeEnum.ARTICLE.getCode(), 10);
+        // 更新缓存
+        if (!Objects.equals(praiseCount, simpleUserInfoDTOS.size())) {
+            RedisClient.hSet(CountConstants.ARTICLE_STATISTIC_INFO + articleId, CountConstants.PRAISE_COUNT, simpleUserInfoDTOS.size());
+        }
         return userFootDao.listDocumentPraisedUsers(articleId, DocumentTypeEnum.ARTICLE.getCode(), 10);
     }
 

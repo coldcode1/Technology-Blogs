@@ -154,8 +154,10 @@ public class ArticleReadServiceImpl implements ArticleReadService {
         // 更新文章统计计数
         article.setCount(countService.queryArticleStatisticInfo(articleId));
 
+        Integer praiseCount = article.getCount().getPraiseCount();
+
         // 设置文章的点赞列表
-        article.setPraisedUsers(userFootService.queryArticlePraisedUsers(articleId));
+        article.setPraisedUsers(userFootService.queryArticlePraisedUsers(articleId, praiseCount));
         return article;
     }
 
