@@ -19,6 +19,7 @@ import com.github.paicoding.forum.api.model.vo.article.dto.SimpleArticleDTO;
 import com.github.paicoding.forum.api.model.vo.article.dto.YearArticleDTO;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import com.github.paicoding.forum.core.cache.RedisClient;
+import com.github.paicoding.forum.core.common.MyConstants;
 import com.github.paicoding.forum.core.permission.UserRole;
 import com.github.paicoding.forum.core.util.JsonUtil;
 import com.github.paicoding.forum.service.article.conveter.ArticleConverter;
@@ -70,7 +71,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
      */
     public ArticleDTO queryArticleDetail(Long articleId) {
         // 从缓存中获取
-        String articleJson = redisTemplate.opsForValue().get("Blogs_ArticleDTO_" + articleId);
+        String articleJson = redisTemplate.opsForValue().get(MyConstants.ARTICLE_DTO_PROFILE + articleId);
         if(articleJson != null){
             return JsonUtil.toObj(articleJson, ArticleDTO.class);
         }
@@ -90,7 +91,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
             // 对于审核中的文章，只有作者本人才能看到原文
             dto.setContent("### 文章审核中，请稍后再看");
         }
-        redisTemplate.opsForValue().set("Blogs_ArticleDTO_" + articleId ,JsonUtil.toStr(dto));
+        redisTemplate.opsForValue().set(MyConstants.ARTICLE_DTO_PROFILE + articleId ,JsonUtil.toStr(dto));
         return dto;
     }
 
@@ -172,6 +173,13 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
 
 
     public List<ArticleDO> listArticlesByCategoryId(Long categoryId, PageParam pageParam) {
+
+        // todo： 不同categoryId的ZSet，以文章id为key，更新时间为score
+        // todo 缓存一致性的保证：
+            // 1.更新文章后，直接更新redis，删除OHC，同时发送RabbitMQ
+            // 2.删除文章后，直接删除对应redis及OHC.
+        Set<String> strings = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + categoryId, pageParam.getOffset(), pageParam.getLimit());
+
         if (categoryId != null && categoryId <= 0) {
             // 分类不存在时，表示查所有
             categoryId = null;
