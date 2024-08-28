@@ -4,7 +4,7 @@ image:
   # 图片前缀
   web-img-path: forum/img/
   # 临时存储目录
-  tmp-upload-path: /tmp/forum/
+  tmp-upload-path: /tmp/forum/git
   # 图片访问域名
   cdn-host:
   oss:

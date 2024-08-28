@@ -31,6 +31,7 @@ import com.github.paicoding.forum.service.article.repository.mapper.ArticleMappe
 import com.github.paicoding.forum.service.article.repository.mapper.ReadCountMapper;
 import com.github.paicoding.forum.service.article.repository.params.SearchArticleParams;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
  * @date 2022-07-18
  */
 @Repository
+@Slf4j
 public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
 
     @Resource
@@ -178,12 +180,24 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
         // todo 缓存一致性的保证：
             // 1.更新文章后，直接更新redis，删除OHC，同时发送RabbitMQ
             // 2.删除文章后，直接删除对应redis及OHC.
-        Set<String> strings = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + categoryId, pageParam.getOffset(), pageParam.getLimit());
+
+
 
         if (categoryId != null && categoryId <= 0) {
             // 分类不存在时，表示查所有
             categoryId = null;
         }
+        Set<String> strings = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + categoryId, pageParam.getOffset(), pageParam.getLimit());
+
+        if(strings != null && !strings.isEmpty()){
+            List<Long> ids = strings.stream().map(Long::parseLong).collect(Collectors.toList());
+            for (Long id : ids) {
+                log.info("id是:{}",id);
+            }
+        }
+
+
+
         LambdaQueryWrapper<ArticleDO> query = Wrappers.lambdaQuery();
         query.eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .eq(ArticleDO::getStatus, PushStatusEnum.ONLINE.getCode());
@@ -199,6 +213,11 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
         query.last(PageParam.getLimitSql(pageParam))
                 .orderByDesc(ArticleDO::getToppingStat,  ArticleDO::getCreateTime);
         List<ArticleDO> articleDOS = baseMapper.selectList(query);
+
+        // 将文章id放入到redis中
+        for (ArticleDO articleDO : articleDOS) {
+            redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + categoryId, articleDO.getId().toString(), articleDO.getUpdateTime().getTime());
+        }
         return articleDOS;
     }
 

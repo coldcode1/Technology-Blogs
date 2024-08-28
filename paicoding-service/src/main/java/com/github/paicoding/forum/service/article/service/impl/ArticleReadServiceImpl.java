@@ -172,12 +172,15 @@ public class ArticleReadServiceImpl implements ArticleReadService {
      */
     @Override
     public PageListVo<ArticleDTO> queryArticlesByCategory(Long categoryId, PageParam page) {
+        // 此时具有的信息：文章id、标题、摘要、更新时间、作者id
         List<ArticleDO> records = articleDao.listArticlesByCategoryId(categoryId, page);
-        return buildArticleListVo(records, page.getPageSize());
+        List<ArticleDTO> result = records.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
+        return PageListVo.newVo(result, page.getPageSize());
+        // return buildIndexArticleListVo(records, page.getPageSize());
     }
 
     /**
-     * 查询置顶的文章列表
+     * 查询置顶卡片中的文章列表
      *
      * @param categoryId
      * @return
@@ -185,8 +188,10 @@ public class ArticleReadServiceImpl implements ArticleReadService {
     @Override
     public List<ArticleDTO> queryTopArticlesByCategory(Long categoryId) {
         PageParam page = PageParam.newPageInstance(PageParam.DEFAULT_PAGE_NUM, PageParam.TOP_PAGE_SIZE);
+        // 将下面的两段封装成一个service代码
         List<ArticleDO> articleDTOS = articleDao.listArticlesByCategoryId(categoryId, page);
-        return articleDTOS.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
+        List<ArticleDTO> result = articleDTOS.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
+        return result;
     }
 
     @Override
@@ -296,7 +301,16 @@ public class ArticleReadServiceImpl implements ArticleReadService {
     }
 
     @Override
+    public PageListVo<ArticleDTO> buildIndexArticleListVo(List<ArticleDO> records, long pageSize) {
+        // 在此填充额外的作者信息、分类信息、标签信息、阅读计数
+        List<ArticleDTO> result = records.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
+        return PageListVo.newVo(result, pageSize);
+    }
+
+    @Override
     public PageListVo<ArticleDTO> buildArticleListVo(List<ArticleDO> records, long pageSize) {
+
+        // 在此填充额外的作者信息、分类信息、标签信息、阅读计数
         List<ArticleDTO> result = records.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
         return PageListVo.newVo(result, pageSize);
     }
@@ -309,11 +323,11 @@ public class ArticleReadServiceImpl implements ArticleReadService {
      */
     private ArticleDTO fillArticleRelatedInfo(ArticleDO record) {
         ArticleDTO dto = ArticleConverter.toDto(record);
-        // 分类信息
+        // 分类信息---通过guava存储
         dto.getCategory().setCategory(categoryService.queryCategoryName(record.getCategoryId()));
-        // 标签列表
+        // 标签列表---查表
         dto.setTags(articleTagDao.queryArticleTagDetails(record.getId()));
-        // 阅读计数统计
+        // 阅读计数统计---通过redis存储
         dto.setCount(countService.queryArticleStatisticInfo(record.getId()));
         // 作者信息
         BaseUserInfoDTO author = userService.queryBasicUserInfo(dto.getAuthor());

@@ -32,6 +32,7 @@ public class PageListVo<T> {
 
     public static <T> PageListVo<T> newVo(List<T> list, long pageSize) {
         PageListVo<T> vo = new PageListVo<>();
+        // 一种偷懒的做法，如果看到当前获取文章列表数量能达到和请求的数量一样，那么说明还有更多。这其实并不多好，但是这里先这样处理
         vo.setList(Optional.ofNullable(list).orElse(Collections.emptyList()));
         vo.setHasMore(vo.getList().size() == pageSize);
         return vo;
