@@ -10,10 +10,7 @@ import com.github.paicoding.forum.api.model.exception.ExceptionUtil;
 import com.github.paicoding.forum.api.model.vo.PageListVo;
 import com.github.paicoding.forum.api.model.vo.PageParam;
 import com.github.paicoding.forum.api.model.vo.PageVo;
-import com.github.paicoding.forum.api.model.vo.article.dto.ArticleDTO;
-import com.github.paicoding.forum.api.model.vo.article.dto.CategoryDTO;
-import com.github.paicoding.forum.api.model.vo.article.dto.SimpleArticleDTO;
-import com.github.paicoding.forum.api.model.vo.article.dto.TagDTO;
+import com.github.paicoding.forum.api.model.vo.article.dto.*;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
@@ -176,27 +173,27 @@ public class ArticleReadServiceImpl implements ArticleReadService {
     @Override
     public PageListVo<ArticleDTO> queryArticlesByCategory(Long categoryId, PageParam page) {
         String tempCategoryId = categoryId == null ? "all" : categoryId.toString();
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId))){
-            Set<String> articlesIds = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, page.getOffset(), page.getLimit());
-            if(articlesIds != null && !articlesIds.isEmpty()){
-                List<Long> ids = articlesIds.stream().map(Long::parseLong).collect(Collectors.toList());
-                for (Long id : ids) {
-                    log.info("id是:{}",id);
-                }
-                List<ArticleDTO> articleDTOCache = Lists.newArrayListWithCapacity(ids.size());
-                List<Long> missIds = new ArrayList<>();
-                for (Long articlesId : ids) {
-                    ArticleDTO articleDTO = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articlesId);
-                    if(articleDTO != null){
-                        articleDTOCache.add(articleDTO);
-                    }else {
-                        missIds.add(articlesId);
-                    }
-                }
-                // todo : 从数据库中查询
-                return PageListVo.newVo(articleDTOCache, page.getPageSize());
-            }
-        }
+//        if(Boolean.TRUE.equals(redisTemplate.hasKey(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId))){
+//            Set<String> articlesIds = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, page.getOffset(), page.getLimit());
+//            if(articlesIds != null && !articlesIds.isEmpty()){
+//                List<Long> ids = articlesIds.stream().map(Long::parseLong).collect(Collectors.toList());
+//                for (Long id : ids) {
+//                    log.info("id是:{}",id);
+//                }
+//                List<ArticleDTO> articleDTOCache = Lists.newArrayListWithCapacity(ids.size());
+//                List<Long> missIds = new ArrayList<>();
+//                for (Long articlesId : ids) {
+//                    ArticleDTO articleDTO = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articlesId);
+//                    if(articleDTO != null){
+//                        articleDTOCache.add(articleDTO);
+//                    }else {
+//                        missIds.add(articlesId);
+//                    }
+//                }
+//                // todo : 从数据库中查询
+//                return PageListVo.newVo(articleDTOCache, page.getPageSize());
+//            }
+//        }
 
 
         // 此时具有的信息：文章id、标题、摘要、更新时间、作者id
@@ -208,14 +205,27 @@ public class ArticleReadServiceImpl implements ArticleReadService {
 
         List<ArticleDTO> result = records.stream().map(this::fillArticleRelatedInfoV2).collect(Collectors.toList());
 
-        for (ArticleDTO articleDTO : result) {
-            OHCacheConfig.ARTICLE_INFO.put(MyConstants.ARTICLE_INFO_PROFILE+articleDTO.getArticleId(), articleDTO);
+        SimpleColumnDTO simpleColumnDTO = new SimpleColumnDTO();
+        simpleColumnDTO.setColumn("11");
+        simpleColumnDTO.setColumnId(11L);
+        simpleColumnDTO.setCover("111");
+        OHCacheConfig.CE_SHI.put("11", simpleColumnDTO);
+        SimpleColumnDTO simpleColumnDTOV2 = OHCacheConfig.CE_SHI.get("11");
 
-            ArticleDTO articleDTO1 = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articleDTO.getArticleId());
+        OHCacheConfig.TTT.put("22","22");
+        String temp = OHCacheConfig.TTT.get("22");
+        log.info(temp);
 
-            // 阅读计数统计---通过redis存储
-            articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
-        }
+//
+
+//        for (ArticleDTO articleDTO : result) {
+//            OHCacheConfig.ARTICLE_INFO.put(MyConstants.ARTICLE_INFO_PROFILE+articleDTO.getArticleId(), articleDTO);
+//
+//            ArticleDTO articleDTO1 = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articleDTO.getArticleId());
+//
+//            // 阅读计数统计---通过redis存储
+//            articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
+//        }
 
         return PageListVo.newVo(result, page.getPageSize());
         // return buildIndexArticleListVo(records, page.getPageSize());
