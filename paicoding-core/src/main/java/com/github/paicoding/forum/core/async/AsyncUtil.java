@@ -48,7 +48,7 @@ public class AsyncUtil {
                 thread.setDaemon(true);
             }
 
-            thread.setName("paicoding-" + this.threadNumber.getAndIncrement());
+            thread.setName("TechnologyBlog--" + this.threadNumber.getAndIncrement());
             return thread;
         }
     };
@@ -68,7 +68,6 @@ public class AsyncUtil {
         executorService = new ExecutorBuilder()
                 .setCorePoolSize(core)
                 .setMaxPoolSize(max)
-                .setKeepAliveTime(0)
                 .setKeepAliveTime(0, TimeUnit.SECONDS)
                 .setWorkQueue(new SynchronousQueue<Runnable>())
                 .setHandler(new ThreadPoolExecutor.CallerRunsPolicy())

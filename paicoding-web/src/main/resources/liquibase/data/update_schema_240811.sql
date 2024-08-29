@@ -1,0 +1,2 @@
+INSERT INTO config (id, `type`, name, banner_url, jump_url, content, `rank`, status, tags, extra, deleted, create_time, update_time)
+values (8, 5, '且听风吟的博客', ' ', 'https://www.cnblogs.com/coldcodeSJTU', '分析日常技术', 3, 1, ' ', '{}', 0, '2023-01-13 19:15:57', '2024-08-10 22:00:22');

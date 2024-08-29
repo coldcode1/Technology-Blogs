@@ -57,9 +57,9 @@ public class TestController {
      * @param req
      * @return
      */
-    @Permission(role = UserRole.ADMIN)
+    // @Permission(role = UserRole.ADMIN)
     @RequestMapping(path = "email")
-    public ResVo<String> email(EmailReqVo req) {
+    public ResVo<String> email(@RequestBody EmailReqVo req) {
         if (StringUtils.isBlank(req.getTo()) || req.getTo().indexOf("@") <= 0) {
             return ResVo.fail(Status.newStatus(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "非法的邮箱接收人"));
         }

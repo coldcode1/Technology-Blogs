@@ -8,9 +8,9 @@
         />
         <div class="home-carouse-item-body">
           <div class="home-carouse-item-title" th:text="${article.title}"></div>
+
           <div class="home-carouse-item-tag">
             <span class="home-carouse-item-dot tag"></span>
-
             <span
               class="home-carouse-item-first-text"
               th:each="tag: ${article.tags}"
@@ -19,16 +19,17 @@
               JAVASCRIPT
             </span>
           </div>
+
           <!-- <object> -->
           <div class="home-carouse-item-tag">
             <span class="home-carouse-item-dot"></span>
             <!-- <a th:href="${'/user/' + article.author}"> -->
-            <span th:text="${article.authorName}" class="author">楼仔，</span>
+            <span th:text="${article.authorName}" class="author">且听风吟</span>
             <!-- </a> -->
             <span
               th:text="'，' + ${#dates.format(article.createTime, 'yyyy/MM/dd')}"
             >
-              2022/10/28
+              2024/06/01
             </span>
           </div>
           <!-- </object> -->
@@ -42,13 +43,7 @@
 
 <script>
   const img = document.getElementById("cover0")
-  // Get all the images with IDs starting with 'cover'
-  const images = document.querySelectorAll('[id^="cover"]');
 
-  // Loop through each image and set the crossOrigin attribute
-  images.forEach(image => {
-    image.setAttribute('crossOrigin', 'anonymous');
-  });
 
   function setColor() {
     let color = colorThief.getColor(img)

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<!-- 专栏详情 -->
+<div th:fragment="hotproject_card(hotproject)">
+  <a
+          th:href="${hotproject.url}"
+          class="item"
+  >
+    <div class="info">
+
+      <div class="title">
+        <span class="colortxt" th:text="${hotproject.index}"></span>
+        <span class="text-highlight" th:text="${hotproject.name}"></span>
+      </div>
+
+      <span class="text-highlight desc" th:text="${hotproject.description}">
+          没有介绍
+        </span>
+
+    </div>
+  </a>
+</div>
+</html>

@@ -37,6 +37,7 @@ public class RequestCountServiceImpl implements RequestCountService {
             requestCountDO.setHost(host);
             requestCountDO.setCnt(1);
             requestCountDO.setDate(Date.valueOf(LocalDate.now()));
+            LocalDate now = LocalDate.now();
             requestCountDao.save(requestCountDO);
         } catch (Exception e) {
             // fixme 非数据库原因得异常，则大概率是0点的并发访问，导致同一天写入多条数据的问题； 可以考虑使用分布式锁来避免

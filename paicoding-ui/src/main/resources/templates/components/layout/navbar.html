@@ -23,7 +23,9 @@
             </div>
             <div class="dropdown-menu">
               <a class="dropdown-item" href="/">首页</a>
-              <a class="dropdown-item" href="/column">教程</a>
+              <a class="dropdown-item" href="/hotproject">热门项目</a>
+              <a class="dropdown-item" href="/algorithm">算法</a>
+              <a class="dropdown-item" href="/mall">商城</a>
               <a class="dropdown-item" href="/chat">派聪明</a>
             </div>
           </div>
@@ -32,19 +34,35 @@
       <div class="collapse navbar-collapse">
         <ul class="navbar-nav">
           <li
-                  th:class="${'nav-item' + (!#strings.equals(global.currentDomain, 'column')
-                    && !#strings.equals(global.currentDomain, 'follow')
+                  th:class="${'nav-item' + (!#strings.equals(global.currentDomain, 'hotproject')
+                    && !#strings.equals(global.currentDomain, 'algorithm')
+                    && !#strings.equals(global.currentDomain, 'mall')
                     && !#strings.equals(global.currentDomain, 'chat')? ' selected-domain' : '')}"
                   class="nav-item"
           >
             <a class="nav-link" href="/">首页</a>
           </li>
           <li
-                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'column') ? ' selected-domain' : '')}"
+                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'hotproject') ? ' selected-domain' : '')}"
                   class="nav-item"
           >
-            <a class="nav-link" href="/column">教程</a>
+            <a class="nav-link" href="/hotproject">热门项目</a>
           </li>
+
+          <li
+                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'algorithm') ? ' selected-domain' : '')}"
+                  class="nav-item"
+          >
+            <a class="nav-link" href="/algorithm">算法</a>
+          </li>
+
+          <li
+                  th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'mall') ? ' selected-domain' : '')}"
+                  class="nav-item"
+          >
+            <a class="nav-link" href="/mall">商城</a>
+          </li>
+
           <li
                   th:class="${'nav-item' + (#strings.equals(global.currentDomain, 'chat') ? ' selected-domain' : '')}"
                   class="nav-item"
@@ -190,6 +208,9 @@
                     <input type="password" required class="form-control form-control-sm" id="password" placeholder="输入密码">
                   </div>
                   <button type="submit" class="btn btn-primary btn-block btn-sm">登录</button>
+                  <p class="mt-3 mb-3 text-muted text-sm-right">还没有账号，
+                    <a id="openRegisterModal" class="text-info" href="#">立即注册</a>
+                  </p>
                 </form>
               </div>
               <div class="other-login-box">
@@ -220,6 +241,7 @@
             </div>
           </div>
         </div>
+
         <div class="modal-footer">
           <div class="agreement-box">
             <div class="mdnice-user-dialog-footer">
@@ -235,36 +257,175 @@
               </p>
             </div>
           </div>
-          <div class="mock-login" th:if="${!#strings.equals(global.env, 'prod')}">
-            <!-- 非生产环境，使用模拟登陆  -->
-            <button
-                    id="mockLogin2"
-                    type="button"
-                    th:data-verify-code="''"
-                    class="btn btn-sm btn-light"
-            >
-              随机新用户
-            </button>
-
-            <button
-                    id="mockLogin"
-                    type="button"
-                    th:data-verify-code="''"
-                    class="btn btn-sm btn-dark"
-            >
-              一键登录
-            </button>
-          </div>
-
         </div>
       </div>
     </div>
   </div>
 
+  <!-- HTML -->
+  <div class="modal fade" id="registerModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">注册账户</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="register-form">
+            <div class="form-group">
+              <label for="registerUser">用户名</label>
+              <input type="text" required class="form-control" id="registerUser" placeholder="输入用户名">
+            </div>
+
+            <div class="form-group">
+              <label for="registerPassword">密码</label>
+              <input type="password" required class="form-control" id="registerPassword" placeholder="输入密码">
+            </div>
+
+            <div class="form-group">
+              <label for="emailInfo">邮箱号</label>
+              <input type="email" required class="form-control" id="emailInfo" placeholder="请输入有效的邮箱地址">
+            </div>
+
+            <div class="form-group">
+              <div class="input-group">
+                <input type="text" class="form-control" id="regisCode" placeholder="请输入验证码">
+                <div class="input-group-append">
+                  <button type="button" id="sendCode" class="btn btn-primary">发送验证码</button>
+                </div>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">注册并登陆</button>
+            <p class="mt-3 mb-0 text-muted text-right">
+              <a id="backToLogin" class="text-info" href="#">已有账号？返回登录</a>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script type="text/javascript">
+    //onblur失去焦点事件，用户离开输入框时执行 JavaScript 代码：
+    //函数：验证邮箱格式
+    function isEmail(emailInfo){
+      //定义正则表达式的变量:邮箱正则
+      var reg=/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+      console.log(emailInfo);
+      //文本框不为空，并且验证邮箱正则成功，给出正确提示
+      if(emailInfo != null && emailInfo.search(reg) != -1)
+      {
+        document.getElementById("test_user").innerHTML = "<font color='green' size='4px'>√邮箱格式正确！</font>";
+      }else{
+        document.getElementById("test_user").innerHTML = "<font color='red' size='4px'>邮箱格式错误！</font>";
+      }
+    }
+  </script>
+
   <script
           src="/js/mock.js"
           th:if="${!#strings.equals(global.env, 'prod')}"
   ></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+      document.getElementById('openRegisterModal').addEventListener('click', function (event) {
+        event.preventDefault(); // 防止默认的链接跳转行为
+
+        // 隐藏登录模态框
+        $('#loginModal').modal('hide');
+
+        // 显示注册模态框
+        $('#registerModal').modal('show');
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // 处理返回登录按钮的点击事件
+      document.getElementById('backToLogin').addEventListener('click', function (event) {
+        event.preventDefault(); // 防止默认的链接跳转行为
+
+        $('#loginModal').modal('show');
+
+        // 显示注册模态框
+        $('#registerModal').modal('hide');
+      });
+    });
+
+
+
+
+    // 为发送验证码按钮绑定点击事件
+    $(document).ready(function() {
+      // 处理验证码发送
+      $("#sendCode").on("click", function() {
+        const email = $("#emailInfo").val();
+        if (!email) {
+          toastr.error("请输入邮箱地址！");
+          return;
+        }
+        const username = $("#registerUser").val();
+        $.ajax({
+          url: "/register/sendcode",
+          type: "POST",
+          data: {
+            username: username,
+            email: email
+          },
+          success: function(response) {
+            if(response.status && response.status.code === 0) {
+              toastr.success("验证码已发送，请检查您的邮箱。");
+            } else {
+              toastr.error(response.status.msg || "发送验证码失败，请稍后重试。");
+            }
+          },
+          error: function() {
+            toastr.error("网络错误，请稍后重试。");
+          }
+        });
+      });
+
+      // 处理注册表单提交
+      $("#register-form").on("submit", function(event) {
+        event.preventDefault();
+
+        const username = $("#registerUser").val();
+        const password = $("#registerPassword").val();
+        const email = $("#emailInfo").val();
+        const sendcode = $("#regisCode").val();
+
+        $.ajax({
+          url: "/register/user",
+          type: "POST",
+          data: {
+            username: username,
+            password: password,
+            email: email,
+            sendcode: sendcode
+          },
+          success: function(response) {
+            if(response.status && response.status.code === 0) {
+              toastr.success("注册成功！");
+              // 可以重定向到登录页面或其他页面
+              window.location.href = '/';
+            } else {
+              toastr.error(response.status.msg || "注册失败，请检查输入。");
+            }
+          },
+          error: function() {
+            toastr.error("网络错误，请稍后重试。");
+          }
+        });
+      });
+    });
+
+  </script>
+
+
   <script th:inline="javascript">
     // 是否自动刷新验证码
     let autoRefresh;
@@ -302,41 +463,6 @@
       });
     });
 
-    // 绑定星球
-    $("#register-form").on("submit", function(event) {
-      event.preventDefault();
-
-      // 获取用户名和密码，没有定义 ID
-      const registerUser = $('#registerUser').val();
-      const starNumber = $("#starNumber").val() | '00000';
-      const password = $("#registerPassword").val();
-      const invitationCode = $("#invitationCode").val();
-
-      $.ajax({
-        url: "/login/register",
-        type: "POST",
-        data: {
-          username: registerUser,
-          starNumber: starNumber.toString().padStart(5, '0'), // "00001",
-          password: password,
-          invitationCode: invitationCode
-        },
-        success: function(response) {
-          console.log(response);
-          if(response.status.code === 0) {
-            // 登录成功
-            refreshPage();
-          } else {
-            // 登录失败
-            toastr.error(response.status.msg);
-          }
-        },
-        error: function(error) {
-          console.error(error);
-          // 出现错误时如何处理
-        }
-      });
-    });
 
 
     $(".nav-article").click(() => {
@@ -525,3 +651,4 @@
   </script>
 </div>
 </html>
+

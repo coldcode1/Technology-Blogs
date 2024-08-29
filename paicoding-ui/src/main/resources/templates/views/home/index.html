@@ -15,7 +15,7 @@
       <div
         th:replace="views/home/navbar/index :: navbar(${vo.categories})"
       ></div>
-      <div th:replace="views/home/recommend/index">精选推荐文章列表</div>
+      <div th:replace="views/home/recommend/index">精选文章卡片列表</div>
 
       <div class="home-wrap bg-color">
         <div class="home-inter-wrap">
@@ -36,6 +36,7 @@
       <!-- 底部信息 -->
       <div th:replace="components/layout/footer :: footer"></div>
     </div>
+
     <script th:inline="javascript">
       const archiveId = [[${vo.categoryId}]]
       const category = [[${ vo.currentCategory }]]

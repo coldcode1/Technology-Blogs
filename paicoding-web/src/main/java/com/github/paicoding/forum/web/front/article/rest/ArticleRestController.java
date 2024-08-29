@@ -18,6 +18,7 @@ import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.notify.NotifyMsgEvent;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import com.github.paicoding.forum.core.common.CommonConstants;
+import com.github.paicoding.forum.core.config.RabbitmqProperties;
 import com.github.paicoding.forum.core.mdc.MdcDot;
 import com.github.paicoding.forum.core.permission.Permission;
 import com.github.paicoding.forum.core.permission.UserRole;
@@ -90,6 +91,9 @@ public class ArticleRestController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RabbitmqProperties rabbitmqProperties;
+
     /**
      * 文章详情页
      * - 参数解析知识点
@@ -113,6 +117,7 @@ public class ArticleRestController {
         articleDTO.setAuthorAvatar(user.getPhoto());
         return ResVo.ok(vo);
     }
+
 
     /**
      * 文章的关联推荐
@@ -189,6 +194,7 @@ public class ArticleRestController {
     @MdcDot(bizCode = "#articleId")
     public ResVo<Boolean> favor(@RequestParam(name = "articleId") Long articleId,
                                 @RequestParam(name = "type") Integer type) throws IOException, TimeoutException {
+        // 请注意，这个只会实现，文章/评论的点赞，以及文章的收餐。（包括取消）
         if (log.isDebugEnabled()) {
             log.debug("开始点赞: {}", type);
         }
@@ -203,18 +209,27 @@ public class ArticleRestController {
             return ResVo.fail(StatusEnum.ILLEGAL_ARGUMENTS_MIXED, "文章不存在!");
         }
 
+        // 在此处存储用户对该文章是否点赞、收藏、浏览等纪录
         UserFootDO foot = userFootService.saveOrUpdateUserFoot(DocumentTypeEnum.ARTICLE, articleId, article.getUserId(),
                 ReqInfoContext.getReqInfo().getUserId(),
                 operate);
+
+
         // 点赞、收藏消息
         NotifyTypeEnum notifyType = OperateTypeEnum.getNotifyType(operate);
-
         // 点赞消息走 RabbitMQ，其它走 Java 内置消息机制
-        if (notifyType.equals(NotifyTypeEnum.PRAISE) && rabbitmqService.enabled()) {
+        // 做了两件事：1.发送信息，通知作者，存储了notifyMsgDao。 2.对文章的点赞、收藏数进行更新
+        if (notifyType.equals(NotifyTypeEnum.PRAISE)  && rabbitmqProperties.getSwitchFlag()) {
             rabbitmqService.publishMsg(
-                    CommonConstants.EXCHANGE_NAME_DIRECT,
-                    BuiltinExchangeType.DIRECT,
+                    CommonConstants.EXCHANGE_NAME_TOPIC,
+                    BuiltinExchangeType.TOPIC,
                     CommonConstants.QUERE_KEY_PRAISE,
+                    JsonUtil.toStr(foot));
+        } else if (notifyType.equals(NotifyTypeEnum.COLLECT) && rabbitmqProperties.getSwitchFlag()){
+            rabbitmqService.publishMsg(
+                    CommonConstants.EXCHANGE_NAME_TOPIC,
+                    BuiltinExchangeType.TOPIC,
+                    CommonConstants.QUERE_KEY_COLLECT,
                     JsonUtil.toStr(foot));
         } else {
             Optional.ofNullable(notifyType).ifPresent(notify -> SpringUtil.publishEvent(new NotifyMsgEvent<>(this, notify, foot)));

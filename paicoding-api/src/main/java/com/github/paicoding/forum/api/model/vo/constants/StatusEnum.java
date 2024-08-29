@@ -65,6 +65,12 @@ public enum StatusEnum {
 
     // --------------------------------
 
+    // 用户注册相关异常
+    REGIST_MAIL_FAILED(400_403_001, "验证码发送失败:%s"),
+
+    REGIST_USER_FAILED(400_403_001, "用户注册失败:%s"),
+
+
     // 用户相关异常
     LOGIN_FAILED_MIXED(400_403_001, "登录失败:%s"),
     USER_NOT_EXISTS(400_404_001, "用户不存在:%s"),

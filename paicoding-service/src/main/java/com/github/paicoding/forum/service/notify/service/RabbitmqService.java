@@ -28,7 +28,6 @@ public interface RabbitmqService {
                     String toutingKey,
                     String message) throws IOException, TimeoutException;
 
-
     /**
      * 消费消息
      *

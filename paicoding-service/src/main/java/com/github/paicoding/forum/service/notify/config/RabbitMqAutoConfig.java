@@ -1,9 +1,13 @@
 package com.github.paicoding.forum.service.notify.config;
 
 import com.github.paicoding.forum.core.async.AsyncUtil;
+import com.github.paicoding.forum.core.common.CommonConstants;
 import com.github.paicoding.forum.core.config.RabbitmqProperties;
+import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnection;
 import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnectionPool;
 import com.github.paicoding.forum.service.notify.service.RabbitmqService;
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -24,19 +28,9 @@ public class RabbitMqAutoConfig implements ApplicationRunner {
     @Resource
     private RabbitmqService rabbitmqService;
 
-    @Autowired
-    private RabbitmqProperties rabbitmqProperties;
-
-
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        String host = rabbitmqProperties.getHost();
-        Integer port = rabbitmqProperties.getPort();
-        String userName = rabbitmqProperties.getUsername();
-        String password = rabbitmqProperties.getPassport();
-        String virtualhost = rabbitmqProperties.getVirtualhost();
-        Integer poolSize = rabbitmqProperties.getPoolSize();
-        RabbitmqConnectionPool.initRabbitmqConnectionPool(host, port, userName, password, virtualhost, poolSize);
+
         AsyncUtil.execute(() -> rabbitmqService.processConsumerMsg());
     }
 }

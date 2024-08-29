@@ -97,4 +97,31 @@
     <changeSet id="00000000000022" author="YiHui">
         <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/init_data_231113.sql"/>
     </changeSet>
+
+    <changeSet id="00000000000023" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240810.sql"/>
+    </changeSet>
+
+    <changeSet id="00000000000024" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240811.sql"/>
+    </changeSet>
+
+    <changeSet id="00000000000025" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240817.sql"/>
+    </changeSet>
+
+    <changeSet id="00000000000026" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/init_data_240817.sql"/>
+    </changeSet>
+
+    <changeSet id="00000000000027" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240818.sql"/>
+    </changeSet>
+
+    <changeSet id="00000000000028" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240819.sql"/>
+    </changeSet>
+
+
+
 </databaseChangeLog>

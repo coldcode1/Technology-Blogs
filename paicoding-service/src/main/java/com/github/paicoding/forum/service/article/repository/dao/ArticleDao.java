@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.paicoding.forum.api.model.context.ReqInfoContext;
 import com.github.paicoding.forum.api.model.enums.DocumentTypeEnum;
-import com.github.paicoding.forum.api.model.enums.OfficalStatEnum;
 import com.github.paicoding.forum.api.model.enums.PushStatusEnum;
 import com.github.paicoding.forum.api.model.enums.YesOrNoEnum;
 import com.github.paicoding.forum.api.model.vo.PageParam;
@@ -18,7 +17,9 @@ import com.github.paicoding.forum.api.model.vo.article.dto.ArticleDTO;
 import com.github.paicoding.forum.api.model.vo.article.dto.SimpleArticleDTO;
 import com.github.paicoding.forum.api.model.vo.article.dto.YearArticleDTO;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import com.github.paicoding.forum.core.common.MyConstants;
 import com.github.paicoding.forum.core.permission.UserRole;
+import com.github.paicoding.forum.core.util.JsonUtil;
 import com.github.paicoding.forum.service.article.conveter.ArticleConverter;
 import com.github.paicoding.forum.service.article.repository.entity.ArticleDO;
 import com.github.paicoding.forum.service.article.repository.entity.ArticleDetailDO;
@@ -28,6 +29,9 @@ import com.github.paicoding.forum.service.article.repository.mapper.ArticleMappe
 import com.github.paicoding.forum.service.article.repository.mapper.ReadCountMapper;
 import com.github.paicoding.forum.service.article.repository.params.SearchArticleParams;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
@@ -43,23 +47,36 @@ import java.util.stream.Collectors;
  * @date 2022-07-18
  */
 @Repository
+@Slf4j
 public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
+
     @Resource
     private ArticleDetailMapper articleDetailMapper;
+
     @Resource
     private ReadCountMapper readCountMapper;
+
     @Resource
     private ArticleMapper articleMapper;
 
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+
 
     /**
-     * 查询文章详情
+     * 查询文章自身详情、包括文章内容
      *
      * @param articleId
      * @return
      */
     public ArticleDTO queryArticleDetail(Long articleId) {
-        // 查询文章记录
+        // 从缓存中获取
+        String articleJson = redisTemplate.opsForValue().get(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
+        if(articleJson != null){
+            return JsonUtil.toObj(articleJson, ArticleDTO.class);
+        }
+
+        // 缓存中没有，从db中获取
         ArticleDO article = baseMapper.selectById(articleId);
         if (article == null || Objects.equals(article.getDeleted(), YesOrNoEnum.YES.getCode())) {
             return null;
@@ -74,6 +91,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
             // 对于审核中的文章，只有作者本人才能看到原文
             dto.setContent("### 文章审核中，请稍后再看");
         }
+        redisTemplate.opsForValue().set(MyConstants.ARTICLE_CONTENT_PROFILE + articleId ,JsonUtil.toStr(dto));
         return dto;
     }
 
@@ -155,24 +173,37 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
 
 
     public List<ArticleDO> listArticlesByCategoryId(Long categoryId, PageParam pageParam) {
+
+        // todo： 不同categoryId的ZSet，以文章id为key，更新时间为score
+        // todo 缓存一致性的保证：
+            // 1.更新文章后，直接更新redis，删除OHC，同时发送RabbitMQ
+            // 2.删除文章后，直接删除对应redis及OHC.
+
+
+
         if (categoryId != null && categoryId <= 0) {
             // 分类不存在时，表示查所有
             categoryId = null;
         }
+
         LambdaQueryWrapper<ArticleDO> query = Wrappers.lambdaQuery();
         query.eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
                 .eq(ArticleDO::getStatus, PushStatusEnum.ONLINE.getCode());
 
         // 如果分页中置顶的四条数据，需要加上官方的查询条件
         // 说明是查询官方的文章，非置顶的文章，只限制全部分类
-        if (categoryId == null && pageParam.getPageSize() == PageParam.TOP_PAGE_SIZE) {
-            query.eq(ArticleDO::getOfficalStat, OfficalStatEnum.OFFICAL.getCode());
-        }
+//        if (categoryId == null && pageParam.getPageSize() == PageParam.TOP_PAGE_SIZE) {
+//            query.eq(ArticleDO::getOfficalStat, OfficalStatEnum.OFFICAL.getCode());
+//        }
+        // 现在文章太少了，全部显示！
 
         Optional.ofNullable(categoryId).ifPresent(cid -> query.eq(ArticleDO::getCategoryId, cid));
         query.last(PageParam.getLimitSql(pageParam))
                 .orderByDesc(ArticleDO::getToppingStat,  ArticleDO::getCreateTime);
-        return baseMapper.selectList(query);
+        List<ArticleDO> articleDOS = baseMapper.selectList(query);
+
+
+        return articleDOS;
     }
 
     public Long countArticleByCategoryId(Long categoryId) {

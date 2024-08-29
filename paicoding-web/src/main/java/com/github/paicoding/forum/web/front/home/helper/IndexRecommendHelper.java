@@ -58,7 +58,7 @@ public class IndexRecommendHelper {
         AsyncUtil.concurrentExecutor("首页响应")
                 .async(() -> vo.setArticles(articleList(category.getCategoryId())), "文章列表")
                 .async(() -> vo.setTopArticles(topArticleList(category)), "置顶文章")
-                .async(() -> vo.setHomeCarouselList(homeCarouselList()), "轮播图")
+                // .async(() -> vo.setHomeCarouselList(homeCarouselList()), "轮播图")
                 .async(() -> vo.setSideBarItems(sidebarService.queryHomeSidebarList()), "侧边栏")
                 .async(() -> vo.setUser(loginInfo()), "用户信息")
                 .allExecuted()
@@ -100,7 +100,7 @@ public class IndexRecommendHelper {
      */
     private List<ArticleDTO> topArticleList(CategoryDTO category) {
         List<ArticleDTO> topArticles = articleService.queryTopArticlesByCategory(category.getCategoryId() == 0 ? null : category.getCategoryId());
-        if (topArticles.size() < PageParam.TOP_PAGE_SIZE) {
+        if (topArticles.size() < 1) {
             // 当分类下文章数小于置顶数时，为了避免显示问题，直接不展示
             topArticles.clear();
             return topArticles;

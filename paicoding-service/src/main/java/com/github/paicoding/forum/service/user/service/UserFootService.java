@@ -74,7 +74,7 @@ public interface UserFootService {
      * @param articleId
      * @return
      */
-    List<SimpleUserInfoDTO> queryArticlePraisedUsers(Long articleId);
+    List<SimpleUserInfoDTO> queryArticlePraisedUsers(Long articleId, Integer praiseCount);
 
 
     /**

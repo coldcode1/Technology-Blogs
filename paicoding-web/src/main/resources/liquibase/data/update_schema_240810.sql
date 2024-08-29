@@ -1,0 +1,4 @@
+UPDATE config SET `type` = 5, `name` = '常用框架源码阅读', `banner_url` = ' ', `jump_url` = 'https://doocs.github.io/source-code-hunter/#/', `content` = '读尽天下源码，心中自然无码！', `rank` = 1, `status` = 1, `tags` = '', `extra` = '{}', `deleted` = 0, `create_time` = '2023-01-13 19:15:57', `update_time` = '2024-08-10 22:00:22' WHERE `id` = 1;
+
+INSERT INTO config (id, `type`, name, banner_url, jump_url, content, `rank`, status, tags, extra, deleted, create_time, update_time)
+values (7, 5, '二哥的java基础知识大全', ' ', 'https://javabetter.cn/', '二哥的Java进阶之路', 2, 1, '技术派', '{}', 0, '2023-01-13 19:15:57', '2024-08-10 22:00:22');

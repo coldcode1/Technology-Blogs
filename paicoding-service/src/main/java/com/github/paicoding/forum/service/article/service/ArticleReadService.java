@@ -125,6 +125,8 @@ public interface ArticleReadService {
      */
     PageListVo<ArticleDTO> queryArticlesByUserAndType(Long userId, PageParam pageParam, HomeSelectEnum select);
 
+    PageListVo<ArticleDTO> buildIndexArticleListVo(List<ArticleDO> records, long pageSize);
+
     /**
      * 文章实体补齐统计、作者、分类标签等信息
      *

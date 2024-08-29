@@ -11,6 +11,7 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.spring5.dialect.SpringStandardDialect;
@@ -109,5 +110,13 @@ public class PaiWebConfig implements WebMvcConfigurer {
                 .mediaType("application/octet-stream", MediaType.APPLICATION_OCTET_STREAM)
                 .mediaType("multipart/form-data", MediaType.MULTIPART_FORM_DATA)
         ;
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**")
+                .allowedOrigins("https://technology-blogs.oss-cn-shanghai.aliyuncs.com")
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+                .allowedHeaders("*");
     }
 }

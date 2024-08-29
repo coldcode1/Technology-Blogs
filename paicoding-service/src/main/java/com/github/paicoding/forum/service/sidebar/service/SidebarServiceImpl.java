@@ -1,5 +1,6 @@
 package com.github.paicoding.forum.service.sidebar.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.paicoding.forum.api.model.enums.ConfigTypeEnum;
 import com.github.paicoding.forum.api.model.enums.SidebarStyleEnum;
 import com.github.paicoding.forum.api.model.enums.rank.ActivityRankTimeEnum;
@@ -44,6 +45,9 @@ public class SidebarServiceImpl implements SidebarService {
     @Autowired
     private ArticleDao articleDao;
 
+    @Autowired
+    private Cache<String,Object> hotArticleCaffeineCache;
+
     /**
      * 使用caffeine本地缓存，来处理侧边栏不怎么变动的消息
      * <p>
@@ -54,16 +58,21 @@ public class SidebarServiceImpl implements SidebarService {
      * @return
      */
     @Override
-    @Cacheable(key = "'homeSidebar'", cacheManager = "caffeineCacheManager", cacheNames = "home")
+    // @Cacheable(key = "'homeSidebar'", cacheManager = "caffeineCacheManager", cacheNames = "home")
     public List<SideBarDTO> queryHomeSidebarList() {
+        Object homeSidebar = hotArticleCaffeineCache.getIfPresent("homeSidebar");
+        if(homeSidebar != null){
+            return (List<SideBarDTO>) homeSidebar;
+        }
         List<SideBarDTO> list = new ArrayList<>();
-        list.add(noticeSideBar());
-        list.add(columnSideBar());
-        list.add(hotArticles());
-        SideBarDTO bar = rankList();
+        list.add(noticeSideBar());      // 关于技术博客园
+        list.add(columnSideBar());      // 推荐资源
+        list.add(hotArticles());        // 热门文章
+        SideBarDTO bar = rankList();    // 此处完成用户排行榜
         if (bar != null) {
             list.add(bar);
         }
+        hotArticleCaffeineCache.put("homeSidebar",list);
         return list;
     }
 
@@ -91,10 +100,8 @@ public class SidebarServiceImpl implements SidebarService {
             );
         });
         return new SideBarDTO()
-                .setTitle("关于技术派")
+                .setTitle("关于技术博客园")
                 // TODO 知识星球的
-                .setImg("https://cdn.tobebetterjavaer.com/paicoding/main/paicoding-zsxq.jpg")
-                .setUrl("https://paicoding.com/article/detail/169")
                 .setItems(items)
                 .setStyle(SidebarStyleEnum.NOTICE.getStyle());
     }
@@ -116,7 +123,7 @@ public class SidebarServiceImpl implements SidebarService {
             item.setImg(configDTO.getBannerUrl());
             items.add(item);
         });
-        return new SideBarDTO().setTitle("精选教程").setItems(items).setStyle(SidebarStyleEnum.COLUMN.getStyle());
+        return new SideBarDTO().setTitle("且听风吟:推荐资源").setItems(items).setStyle(SidebarStyleEnum.COLUMN.getStyle());
     }
 
 
@@ -127,7 +134,14 @@ public class SidebarServiceImpl implements SidebarService {
      */
     private SideBarDTO hotArticles() {
         PageListVo<SimpleArticleDTO> vo = articleReadService.queryHotArticlesForRecommend(PageParam.newPageInstance(1, 8));
-        List<SideBarItemDTO> items = vo.getList().stream().map(s -> new SideBarItemDTO().setTitle(s.getTitle()).setUrl("/article/detail/" + s.getId()).setTime(s.getCreateTime().getTime())).collect(Collectors.toList());
+        Object hotArtile = hotArticleCaffeineCache.getIfPresent("hotArtile");
+        List<SideBarItemDTO> items;
+        if(hotArtile==null){
+            items = vo.getList().stream().map(s -> new SideBarItemDTO().setTitle(s.getTitle()).setUrl("/article/detail/" + s.getId()).setTime(s.getCreateTime().getTime())).collect(Collectors.toList());
+            hotArticleCaffeineCache.put("hotArtile",items);
+        }else {
+            items = (List<SideBarItemDTO>) hotArtile;
+        }
         return new SideBarDTO().setTitle("热门文章").setItems(items).setStyle(SidebarStyleEnum.ARTICLES.getStyle());
     }
 
@@ -142,41 +156,12 @@ public class SidebarServiceImpl implements SidebarService {
     @Override
     @Cacheable(key = "'sideBar_' + #articleId", cacheManager = "caffeineCacheManager", cacheNames = "article")
     public List<SideBarDTO> queryArticleDetailSidebarList(Long author, Long articleId) {
-        List<SideBarDTO> list = new ArrayList<>(2);
-        // 不能直接使用 pdfSideBar()的方式调用，会导致缓存不生效
-        list.add(SpringUtil.getBean(SidebarServiceImpl.class).pdfSideBar());
+        List<SideBarDTO> list = new ArrayList<>(1);
         list.add(recommendByAuthor(author, articleId, PageParam.DEFAULT_PAGE_SIZE));
         return list;
     }
 
-    /**
-     * PDF 优质资源
-     *
-     * @return
-     */
-    @Cacheable(key = "'sideBar'", cacheManager = "caffeineCacheManager", cacheNames = "article")
-    public SideBarDTO pdfSideBar() {
-        List<ConfigDTO> pdfList = configService.getConfigList(ConfigTypeEnum.PDF);
-        List<SideBarItemDTO> items = new ArrayList<>(pdfList.size());
-        pdfList.forEach(configDTO -> {
-            SideBarItemDTO dto = new SideBarItemDTO();
-            dto.setName(configDTO.getName());
-            dto.setUrl(configDTO.getJumpUrl());
-            dto.setImg(configDTO.getBannerUrl());
-            RateVisitDTO visit;
-            if (StringUtils.isNotBlank(configDTO.getExtra())) {
-                visit = (JsonUtil.toObj(configDTO.getExtra(), RateVisitDTO.class));
-            } else {
-                visit = new RateVisitDTO();
-            }
-            visit.incrVisit();
-            // 更新阅读计数
-            configService.updateVisit(configDTO.getId(), JsonUtil.toStr(visit));
-            dto.setVisit(visit);
-            items.add(dto);
-        });
-        return new SideBarDTO().setTitle("优质PDF").setItems(items).setStyle(SidebarStyleEnum.PDF.getStyle());
-    }
+
 
 
     /**
@@ -217,9 +202,9 @@ public class SidebarServiceImpl implements SidebarService {
      * @return
      */
     private SideBarDTO subscribeSideBar() {
-        return new SideBarDTO().setTitle("订阅").setSubTitle("楼仔")
-                .setImg("//cdn.tobebetterjavaer.com/paicoding/a768cfc54f59d4a056f79d1c959dcae9.jpg")
-                .setContent("10本校招必刷八股文")
+        return new SideBarDTO().setTitle("订阅").setSubTitle("且听风吟随笔")
+                .setImg("https://technology-blogs.oss-cn-shanghai.aliyuncs.com/blogs/wxImages/wxLoginImage.jpg")
+                .setContent("Spring原创深度解析等各种资料")
                 .setStyle(SidebarStyleEnum.SUBSCRIBE.getStyle());
     }
 

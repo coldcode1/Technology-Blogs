@@ -18,6 +18,7 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -46,8 +47,7 @@ public class RabbitmqServiceImpl implements RabbitmqService {
             Connection connection = rabbitmqConnection.getConnection();
             //创建消息通道
             Channel channel = connection.createChannel();
-            // 声明exchange中的消息为可持久化，不自动删除
-            channel.exchangeDeclare(exchange, exchangeType, true, false, null);
+
             // 发布消息
             channel.basicPublish(exchange, toutingKey, null, message.getBytes());
             log.info("Publish msg: {}", message);
@@ -58,6 +58,7 @@ public class RabbitmqServiceImpl implements RabbitmqService {
         }
 
     }
+
 
     @Override
     public void consumerMsg(String exchange,
@@ -87,13 +88,18 @@ public class RabbitmqServiceImpl implements RabbitmqService {
                     notifyService.saveArticleNotify(JsonUtil.toObj(message, UserFootDO.class), NotifyTypeEnum.PRAISE);
 
                     channel.basicAck(envelope.getDeliveryTag(), false);
+                    try {
+                        channel.close();
+                    } catch (TimeoutException e) {
+                        throw new RuntimeException(e);
+                    }
+                    RabbitmqConnectionPool.returnConnection(rabbitmqConnection);
                 }
             };
             // 取消自动ack
             channel.basicConsume(queueName, false, consumer);
-            channel.close();
-            RabbitmqConnectionPool.returnConnection(rabbitmqConnection);
-        } catch (InterruptedException | IOException | TimeoutException e) {
+
+        } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -110,10 +116,10 @@ public class RabbitmqServiceImpl implements RabbitmqService {
             step++;
             try {
                 log.info("processConsumerMsg cycle.");
-                consumerMsg(CommonConstants.EXCHANGE_NAME_DIRECT, CommonConstants.QUERE_NAME_PRAISE,
-                        CommonConstants.QUERE_KEY_PRAISE);
+//                consumerMsg(CommonConstants.EXCHANGE_NAME_DIRECT, CommonConstants.QUERE_NAME_PRAISE,
+//                        CommonConstants.QUERE_KEY_PRAISE);
                 if (step.equals(stepTotal)) {
-                    Thread.sleep(10000);
+                    Thread.sleep(1000000);
                     step = 0;
                 }
             } catch (Exception e) {

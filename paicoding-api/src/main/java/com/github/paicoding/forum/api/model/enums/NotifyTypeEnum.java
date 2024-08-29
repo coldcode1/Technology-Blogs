@@ -11,6 +11,9 @@ import java.util.Map;
  */
 @Getter
 public enum NotifyTypeEnum {
+    /**
+     * 通知类型
+     */
     COMMENT(1, "评论"),
     REPLY(2, "回复"),
     PRAISE(3, "点赞"),

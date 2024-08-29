@@ -1,0 +1,9 @@
+truncate table config;
+
+
+INSERT INTO `config` (`id`, `type`, `name`, `banner_url`, `jump_url`, `content`, `rank`, `status`, `tags`, `extra`, `deleted`, `create_time`, `update_time`) VALUES (1, 5, '常用框架源码阅读', ' ', 'https://doocs.github.io/source-code-hunter/#/', '读尽天下源码，心中自然无码！', 1, 1, '', '{}', 0, '2023-01-13 19:15:57', '2024-08-10 22:00:22');
+INSERT INTO `config` (`id`, `type`, `name`, `banner_url`, `jump_url`, `content`, `rank`, `status`, `tags`, `extra`, `deleted`, `create_time`, `update_time`) VALUES (2, 1, '加入社区2', 'https://imgs.hhui.top/forum/banner/01.png', 'https://hhui.top/', '', 2, 1, '', '{}', 0, '2023-01-13 19:15:57', '2023-01-13 19:15:57');
+INSERT INTO `config` (`id`, `type`, `name`, `banner_url`, `jump_url`, `content`, `rank`, `status`, `tags`, `extra`, `deleted`, `create_time`, `update_time`) VALUES (3, 4, '官宣：技术博客园上线了', '11', 'https://mp.weixin.qq.com/s/R8-ox4szb8E-C__q-yaK6Q?token=1928774114&lang=zh_CN', '在技术的海洋里翱翔~', 1, 1, '2', '{}', 0, '2023-01-13 19:15:57', '2024-08-17 20:44:49');
+INSERT INTO `config` (`id`, `type`, `name`, `banner_url`, `jump_url`, `content`, `rank`, `status`, `tags`, `extra`, `deleted`, `create_time`, `update_time`) VALUES (4, 4, 'Java原创工具代码库来了！', ' 2', 'https://github.com/coldcode1/Java-Utils', '原创。记录常用的工具代码模块', 2, 1, '2', '{}', 0, '2023-01-13 19:15:57', '2024-08-10 11:35:41');
+INSERT INTO `config` (`id`, `type`, `name`, `banner_url`, `jump_url`, `content`, `rank`, `status`, `tags`, `extra`, `deleted`, `create_time`, `update_time`) VALUES (7, 5, '二哥的java基础知识大全', ' ', 'https://javabetter.cn/', '二哥的Java进阶之路', 2, 1, '技术派', '{}', 0, '2023-01-13 19:15:57', '2024-08-10 22:00:22');
+INSERT INTO `config` (`id`, `type`, `name`, `banner_url`, `jump_url`, `content`, `rank`, `status`, `tags`, `extra`, `deleted`, `create_time`, `update_time`) VALUES (8, 5, '且听风吟的博客', ' ', 'https://www.cnblogs.com/coldcodeSJTU', '分析日常技术', 3, 1, ' ', '{}', 0, '2023-01-13 19:15:57', '2024-08-10 22:00:22');

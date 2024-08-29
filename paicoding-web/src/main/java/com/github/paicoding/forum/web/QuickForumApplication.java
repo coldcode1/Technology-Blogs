@@ -7,6 +7,7 @@ import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.web.config.GlobalViewConfig;
 import com.github.paicoding.forum.web.global.ForumExceptionHandler;
 import com.github.paicoding.forum.web.hook.interceptor.GlobalViewInterceptor;
+import com.github.paicoding.forum.web.hook.interceptor.MyTestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -40,17 +41,20 @@ import java.util.List;
 @ServletComponentScan
 @SpringBootApplication
 public class QuickForumApplication implements WebMvcConfigurer, ApplicationRunner {
+
     @Value("${server.port:8080}")
     private Integer webPort;
-
-
 
     @Resource
     private GlobalViewInterceptor globalViewInterceptor;
 
+    @Resource
+    private MyTestInterceptor myTestInterceptor; // MyTestInterceptor
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(globalViewInterceptor).addPathPatterns("/**");
+        // registry.addInterceptor(myTestInterceptor).addPathPatterns("/**");
     }
 
     @Override
@@ -62,9 +66,6 @@ public class QuickForumApplication implements WebMvcConfigurer, ApplicationRunne
         SpringApplication.run(QuickForumApplication.class, args);
     }
 
-
-    // LTAI5tKpRjPgxzndfySPzktM
-    // B9zMuRtujAWDGJq8kZWcEcmKFjiBF5
 
     /**
      * 兼容本地启动时8080端口被占用的场景; 只有dev启动方式才做这个逻辑

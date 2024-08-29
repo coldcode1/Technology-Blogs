@@ -11,6 +11,9 @@ import lombok.Getter;
 @Getter
 public enum OperateTypeEnum {
 
+    /**
+     * 操作类型
+     */
     EMPTY(0, "") {
         @Override
         public int getDbStatCode() {

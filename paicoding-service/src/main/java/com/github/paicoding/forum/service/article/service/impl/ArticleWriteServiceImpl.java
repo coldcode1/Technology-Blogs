@@ -7,6 +7,7 @@ import com.github.paicoding.forum.api.model.exception.ExceptionUtil;
 import com.github.paicoding.forum.api.model.vo.article.ArticlePostReq;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import com.github.paicoding.forum.core.common.MyConstants;
 import com.github.paicoding.forum.core.permission.UserRole;
 import com.github.paicoding.forum.core.util.NumUtil;
 import com.github.paicoding.forum.core.util.SpringUtil;
@@ -16,12 +17,12 @@ import com.github.paicoding.forum.service.article.repository.dao.ArticleDao;
 import com.github.paicoding.forum.service.article.repository.dao.ArticleTagDao;
 import com.github.paicoding.forum.service.article.repository.entity.ArticleDO;
 import com.github.paicoding.forum.service.article.service.ArticleWriteService;
-import com.github.paicoding.forum.service.article.service.ColumnSettingService;
 import com.github.paicoding.forum.service.image.service.ImageService;
 import com.github.paicoding.forum.service.user.service.AuthorWhiteListService;
 import com.github.paicoding.forum.service.user.service.UserFootService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -47,9 +48,6 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
     private final ArticleTagDao articleTagDao;
 
     @Autowired
-    private ColumnSettingService columnSettingService;
-
-    @Autowired
     private UserFootService userFootService;
 
     @Autowired
@@ -60,6 +58,9 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
 
     @Autowired
     private AuthorWhiteListService articleWhiteListService;
+
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
 
     public ArticleWriteServiceImpl(ArticleDao articleDao, ArticleTagDao articleTagDao) {
         this.articleDao = articleDao;
@@ -85,11 +86,8 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
                     log.info("文章发布成功! title={}", req.getTitle());
                 } else {
                     articleId = updateArticle(article, content, req.getTagIds());
+                    redisTemplate.delete(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
                     log.info("文章更新成功！ title={}", article.getTitle());
-                }
-                if (req.getColumnId() != null) {
-                    // 更新文章对应的专栏信息
-                    columnSettingService.saveColumnArticle(articleId, req.getColumnId());
                 }
                 return articleId;
             }
@@ -188,6 +186,7 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
         if (dto != null && dto.getDeleted() != YesOrNoEnum.YES.getCode()) {
             dto.setDeleted(YesOrNoEnum.YES.getCode());
             articleDao.updateById(dto);
+            redisTemplate.delete(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
 
             // 发布文章删除事件
             SpringUtil.publishEvent(new ArticleMsgEvent<>(this, ArticleEventEnum.DELETE, dto));

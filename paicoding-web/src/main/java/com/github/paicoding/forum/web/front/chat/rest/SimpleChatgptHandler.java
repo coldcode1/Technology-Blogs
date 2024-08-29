@@ -39,6 +39,7 @@ public class SimpleChatgptHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        log.info("TextWebSocketHandler启动成功");
         session.sendMessage(getTextMessage("开始你和派聪明的AI之旅吧", ChatSocketStateEnum.Established.getCode()));
     }
 
@@ -53,6 +54,7 @@ public class SimpleChatgptHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        log.info("关闭了！！！");
         session.sendMessage(getTextMessage("下次再撩吧（笑）", ChatSocketStateEnum.Closed.getCode()));
     }
 }

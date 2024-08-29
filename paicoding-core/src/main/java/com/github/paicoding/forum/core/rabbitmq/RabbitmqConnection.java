@@ -1,7 +1,11 @@
 package com.github.paicoding.forum.core.rabbitmq;
 
+import com.github.paicoding.forum.core.util.JsonUtil;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
@@ -10,6 +14,8 @@ import java.util.concurrent.TimeoutException;
  * @author Louzai
  * @date 2023/5/10
  */
+
+@Slf4j
 public class RabbitmqConnection {
 
     private Connection connection;
