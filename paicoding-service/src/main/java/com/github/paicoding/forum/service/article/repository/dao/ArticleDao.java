@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.paicoding.forum.api.model.context.ReqInfoContext;
 import com.github.paicoding.forum.api.model.enums.DocumentTypeEnum;
-import com.github.paicoding.forum.api.model.enums.OfficalStatEnum;
 import com.github.paicoding.forum.api.model.enums.PushStatusEnum;
 import com.github.paicoding.forum.api.model.enums.YesOrNoEnum;
 import com.github.paicoding.forum.api.model.vo.PageParam;
@@ -18,7 +17,6 @@ import com.github.paicoding.forum.api.model.vo.article.dto.ArticleDTO;
 import com.github.paicoding.forum.api.model.vo.article.dto.SimpleArticleDTO;
 import com.github.paicoding.forum.api.model.vo.article.dto.YearArticleDTO;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
-import com.github.paicoding.forum.core.cache.RedisClient;
 import com.github.paicoding.forum.core.common.MyConstants;
 import com.github.paicoding.forum.core.permission.UserRole;
 import com.github.paicoding.forum.core.util.JsonUtil;
@@ -73,7 +71,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
      */
     public ArticleDTO queryArticleDetail(Long articleId) {
         // 从缓存中获取
-        String articleJson = redisTemplate.opsForValue().get(MyConstants.ARTICLE_DTO_PROFILE + articleId);
+        String articleJson = redisTemplate.opsForValue().get(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
         if(articleJson != null){
             return JsonUtil.toObj(articleJson, ArticleDTO.class);
         }
@@ -93,7 +91,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
             // 对于审核中的文章，只有作者本人才能看到原文
             dto.setContent("### 文章审核中，请稍后再看");
         }
-        redisTemplate.opsForValue().set(MyConstants.ARTICLE_DTO_PROFILE + articleId ,JsonUtil.toStr(dto));
+        redisTemplate.opsForValue().set(MyConstants.ARTICLE_CONTENT_PROFILE + articleId ,JsonUtil.toStr(dto));
         return dto;
     }
 
@@ -187,16 +185,6 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
             // 分类不存在时，表示查所有
             categoryId = null;
         }
-        Set<String> strings = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + categoryId, pageParam.getOffset(), pageParam.getLimit());
-
-        if(strings != null && !strings.isEmpty()){
-            List<Long> ids = strings.stream().map(Long::parseLong).collect(Collectors.toList());
-            for (Long id : ids) {
-                log.info("id是:{}",id);
-            }
-        }
-
-
 
         LambdaQueryWrapper<ArticleDO> query = Wrappers.lambdaQuery();
         query.eq(ArticleDO::getDeleted, YesOrNoEnum.NO.getCode())
@@ -214,10 +202,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
                 .orderByDesc(ArticleDO::getToppingStat,  ArticleDO::getCreateTime);
         List<ArticleDO> articleDOS = baseMapper.selectList(query);
 
-        // 将文章id放入到redis中
-        for (ArticleDO articleDO : articleDOS) {
-            redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + categoryId, articleDO.getId().toString(), articleDO.getUpdateTime().getTime());
-        }
+
         return articleDOS;
     }
 

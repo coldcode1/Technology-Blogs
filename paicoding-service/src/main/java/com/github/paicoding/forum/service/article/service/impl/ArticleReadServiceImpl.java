@@ -16,6 +16,8 @@ import com.github.paicoding.forum.api.model.vo.article.dto.SimpleArticleDTO;
 import com.github.paicoding.forum.api.model.vo.article.dto.TagDTO;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
+import com.github.paicoding.forum.core.common.MyConstants;
 import com.github.paicoding.forum.core.util.ArticleUtil;
 import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.service.article.conveter.ArticleConverter;
@@ -30,6 +32,7 @@ import com.github.paicoding.forum.service.statistics.service.CountService;
 import com.github.paicoding.forum.service.user.repository.entity.UserFootDO;
 import com.github.paicoding.forum.service.user.service.UserFootService;
 import com.github.paicoding.forum.service.user.service.UserService;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -44,16 +47,12 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +85,10 @@ public class ArticleReadServiceImpl implements ArticleReadService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+
 
     // 是否开启ES
     @Value("${elasticsearch.open:false}")
@@ -172,9 +175,48 @@ public class ArticleReadServiceImpl implements ArticleReadService {
      */
     @Override
     public PageListVo<ArticleDTO> queryArticlesByCategory(Long categoryId, PageParam page) {
+        String tempCategoryId = categoryId == null ? "all" : categoryId.toString();
+        if(Boolean.TRUE.equals(redisTemplate.hasKey(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId))){
+            Set<String> articlesIds = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, page.getOffset(), page.getLimit());
+            if(articlesIds != null && !articlesIds.isEmpty()){
+                List<Long> ids = articlesIds.stream().map(Long::parseLong).collect(Collectors.toList());
+                for (Long id : ids) {
+                    log.info("id是:{}",id);
+                }
+                List<ArticleDTO> articleDTOCache = Lists.newArrayListWithCapacity(ids.size());
+                List<Long> missIds = new ArrayList<>();
+                for (Long articlesId : ids) {
+                    ArticleDTO articleDTO = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articlesId);
+                    if(articleDTO != null){
+                        articleDTOCache.add(articleDTO);
+                    }else {
+                        missIds.add(articlesId);
+                    }
+                }
+                // todo : 从数据库中查询
+                return PageListVo.newVo(articleDTOCache, page.getPageSize());
+            }
+        }
+
+
         // 此时具有的信息：文章id、标题、摘要、更新时间、作者id
         List<ArticleDO> records = articleDao.listArticlesByCategoryId(categoryId, page);
-        List<ArticleDTO> result = records.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
+        // 将文章id放入到redis中
+        for (ArticleDO articleDO : records) {
+            redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, articleDO.getId().toString(), articleDO.getUpdateTime().getTime());
+        }
+
+        List<ArticleDTO> result = records.stream().map(this::fillArticleRelatedInfoV2).collect(Collectors.toList());
+
+        for (ArticleDTO articleDTO : result) {
+            OHCacheConfig.ARTICLE_INFO.put(MyConstants.ARTICLE_INFO_PROFILE+articleDTO.getArticleId(), articleDTO);
+
+            ArticleDTO articleDTO1 = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articleDTO.getArticleId());
+
+            // 阅读计数统计---通过redis存储
+            articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
+        }
+
         return PageListVo.newVo(result, page.getPageSize());
         // return buildIndexArticleListVo(records, page.getPageSize());
     }
@@ -327,8 +369,21 @@ public class ArticleReadServiceImpl implements ArticleReadService {
         dto.getCategory().setCategory(categoryService.queryCategoryName(record.getCategoryId()));
         // 标签列表---查表
         dto.setTags(articleTagDao.queryArticleTagDetails(record.getId()));
+        // 作者信息
+        BaseUserInfoDTO author = userService.queryBasicUserInfo(dto.getAuthor());
         // 阅读计数统计---通过redis存储
         dto.setCount(countService.queryArticleStatisticInfo(record.getId()));
+        dto.setAuthorName(author.getUserName());
+        dto.setAuthorAvatar(author.getPhoto());
+        return dto;
+    }
+
+    private ArticleDTO fillArticleRelatedInfoV2(ArticleDO record) {
+        ArticleDTO dto = ArticleConverter.toDto(record);
+        // 分类信息---通过guava存储
+        dto.getCategory().setCategory(categoryService.queryCategoryName(record.getCategoryId()));
+        // 标签列表---查表
+        dto.setTags(articleTagDao.queryArticleTagDetails(record.getId()));
         // 作者信息
         BaseUserInfoDTO author = userService.queryBasicUserInfo(dto.getAuthor());
         dto.setAuthorName(author.getUserName());

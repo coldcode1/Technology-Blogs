@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.core.cache.local;
+package com.github.paicoding.forum.core.cache.cacheserializer;
 
 import com.google.common.base.Charsets;
 import org.caffinitas.ohc.CacheSerializer;

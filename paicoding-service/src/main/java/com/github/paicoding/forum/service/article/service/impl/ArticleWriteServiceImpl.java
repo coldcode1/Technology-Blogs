@@ -7,7 +7,6 @@ import com.github.paicoding.forum.api.model.exception.ExceptionUtil;
 import com.github.paicoding.forum.api.model.vo.article.ArticlePostReq;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
-import com.github.paicoding.forum.core.cache.RedisClient;
 import com.github.paicoding.forum.core.common.MyConstants;
 import com.github.paicoding.forum.core.permission.UserRole;
 import com.github.paicoding.forum.core.util.NumUtil;
@@ -87,7 +86,7 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
                     log.info("文章发布成功! title={}", req.getTitle());
                 } else {
                     articleId = updateArticle(article, content, req.getTagIds());
-                    redisTemplate.delete(MyConstants.ARTICLE_DTO_PROFILE  + articleId);
+                    redisTemplate.delete(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
                     log.info("文章更新成功！ title={}", article.getTitle());
                 }
                 return articleId;
@@ -187,7 +186,7 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
         if (dto != null && dto.getDeleted() != YesOrNoEnum.YES.getCode()) {
             dto.setDeleted(YesOrNoEnum.YES.getCode());
             articleDao.updateById(dto);
-            redisTemplate.delete(MyConstants.ARTICLE_DTO_PROFILE + articleId);
+            redisTemplate.delete(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
 
             // 发布文章删除事件
             SpringUtil.publishEvent(new ArticleMsgEvent<>(this, ArticleEventEnum.DELETE, dto));
