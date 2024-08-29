@@ -20,17 +20,15 @@ import java.util.List;
 public class OHCacheConfig {
 
     // 存储
-//    public static final List<Class> classList = List.of(new Class[]{ArticleDTO.class, TagDTO.class, CategoryDTO.class,ArticleFootCountDTO.class, SimpleUserInfoDTO.class});
-//    public static final OHCache<String, ArticleDTO> ARTICLE_INFO = OHCacheBuilder.<String, ArticleDTO>newBuilder()
-//            .capacity(1000)
-//            .segmentCount(64)
-//            .timeouts(false)
-//            .keySerializer(new StringSerializer())
-//            .valueSerializer(new FurySerializer<ArticleDTO>(classList))
-//            .build();
+    public static final List<Class> classList = List.of(new Class[]{ArticleDTO.class, TagDTO.class, CategoryDTO.class,ArticleFootCountDTO.class, SimpleUserInfoDTO.class});
+    public static final OHCache<String, ArticleDTO> ARTICLE_INFO = OHCacheBuilder.<String, ArticleDTO>newBuilder()
+            .segmentCount(64)
+            .timeouts(false)
+            .keySerializer(new StringSerializer())
+            .valueSerializer(new FurySerializer<ArticleDTO>(classList))
+            .build();
 
     public static final OHCache<String, SimpleColumnDTO> CE_SHI = OHCacheBuilder.<String, SimpleColumnDTO>newBuilder()
-            .capacity(1000)
             .segmentCount(64)
             .timeouts(false)
             .keySerializer(new StringSerializer())
@@ -38,7 +36,6 @@ public class OHCacheConfig {
             .build();
 
     public static final OHCache<String, String> TTT = OHCacheBuilder.<String, String>newBuilder()
-            .capacity(1000)
             .segmentCount(64)
             .keySerializer(new StringSerializer())
             .valueSerializer(new StringSerializer())
