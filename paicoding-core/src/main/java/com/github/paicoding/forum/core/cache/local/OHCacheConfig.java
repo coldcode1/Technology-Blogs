@@ -12,6 +12,8 @@ import org.caffinitas.ohc.OHCache;
 import org.caffinitas.ohc.OHCacheBuilder;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,7 +22,7 @@ import java.util.List;
 public class OHCacheConfig {
 
     // 存储
-    public static final List<Class> classList = List.of(new Class[]{ArticleDTO.class, TagDTO.class, CategoryDTO.class,ArticleFootCountDTO.class, SimpleUserInfoDTO.class});
+    public static final List<Class> classList = Arrays.asList(ArticleDTO.class, TagDTO.class, CategoryDTO.class,ArticleFootCountDTO.class, SimpleUserInfoDTO.class);
     public static final OHCache<String, ArticleDTO> ARTICLE_INFO = OHCacheBuilder.<String, ArticleDTO>newBuilder()
             .segmentCount(64)
             .timeouts(false)

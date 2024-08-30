@@ -95,6 +95,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
         return dto;
     }
 
+
     private boolean showReviewContent(ArticleDO article) {
         if (article.getStatus() != PushStatusEnum.REVIEW.getCode()) {
             return true;
@@ -171,6 +172,11 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
         return baseMapper.selectList(query);
     }
 
+    public List<ArticleDO> listArticleByIds(List<Long> articleIdsList){
+        LambdaQueryWrapper<ArticleDO> query = Wrappers.lambdaQuery();
+        query.in(ArticleDO::getId, articleIdsList);
+        return baseMapper.selectList(query);
+    }
 
     public List<ArticleDO> listArticlesByCategoryId(Long categoryId, PageParam pageParam) {
 
@@ -178,8 +184,6 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
         // todo 缓存一致性的保证：
             // 1.更新文章后，直接更新redis，删除OHC，同时发送RabbitMQ
             // 2.删除文章后，直接删除对应redis及OHC.
-
-
 
         if (categoryId != null && categoryId <= 0) {
             // 分类不存在时，表示查所有

@@ -163,6 +163,17 @@ public class ArticleReadServiceImpl implements ArticleReadService {
         return article;
     }
 
+    private List<ArticleDTO> queryOHCMissArticle(List<Long> missIds){
+        List<ArticleDO> articleDOS = articleDao.listArticleByIds(missIds);
+        List<ArticleDTO> missResult = articleDOS.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
+        for (ArticleDTO articleDTO : missResult) {
+            OHCacheConfig.ARTICLE_INFO.put(MyConstants.ARTICLE_INFO_PROFILE+articleDTO.getArticleId(), articleDTO);
+            // 阅读计数统计---通过redis存储
+            articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
+        }
+        return missResult;
+    }
+
 
     /**
      * 查询文章列表
@@ -174,30 +185,32 @@ public class ArticleReadServiceImpl implements ArticleReadService {
     @Override
     public PageListVo<ArticleDTO> queryArticlesByCategory(Long categoryId, PageParam page) {
         String tempCategoryId = categoryId == null ? "all" : categoryId.toString();
+        // 此后都走这个逻辑
         if(Boolean.TRUE.equals(redisTemplate.hasKey(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId))){
             Set<String> articlesIds = redisTemplate.opsForZSet().reverseRange(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, page.getOffset(), page.getLimit());
             if(articlesIds != null && !articlesIds.isEmpty()){
                 List<Long> ids = articlesIds.stream().map(Long::parseLong).collect(Collectors.toList());
-                for (Long id : ids) {
-                    log.info("id是:{}",id);
-                }
-                List<ArticleDTO> articleDTOCache = Lists.newArrayListWithCapacity(ids.size());
+                List<ArticleDTO> result = Lists.newArrayListWithCapacity(ids.size());
                 List<Long> missIds = new ArrayList<>();
                 for (Long articlesId : ids) {
                     ArticleDTO articleDTO = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articlesId);
                     if(articleDTO != null){
                         articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
-                        articleDTOCache.add(articleDTO);
+                        result.add(articleDTO);
                     }else {
                         missIds.add(articlesId);
                     }
                 }
-                log.info("miss count {}", missIds.size());
+                if(!missIds.isEmpty()){
+                    List<ArticleDTO> missArticle = queryOHCMissArticle(missIds);
+                    result.addAll(missArticle);
+                }
                 // todo : 从数据库中查询
-                return PageListVo.newVo(articleDTOCache, page.getPageSize());
+                return PageListVo.newVo(result, page.getPageSize());
             }
         }
 
+        // 只有第一次更新redis的时候，才会走这里
 
         // 此时具有的信息：文章id、标题、摘要、更新时间、作者id
         List<ArticleDO> records = articleDao.listArticlesByCategoryId(categoryId, page);
