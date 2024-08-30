@@ -122,6 +122,10 @@
         <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240819.sql"/>
     </changeSet>
 
+    <changeSet id="00000000000029" author="coldcode1">
+        <sqlFile dbms="mysql" endDelimiter=";" encoding="UTF-8" path="liquibase/data/update_schema_240830.sql"/>
+    </changeSet>
+
 
 
 </databaseChangeLog>
