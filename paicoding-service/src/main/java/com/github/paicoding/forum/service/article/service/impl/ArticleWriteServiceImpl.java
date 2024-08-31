@@ -7,6 +7,7 @@ import com.github.paicoding.forum.api.model.exception.ExceptionUtil;
 import com.github.paicoding.forum.api.model.vo.article.ArticlePostReq;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
+import com.github.paicoding.forum.core.cache.local.OHCacheConfig;
 import com.github.paicoding.forum.core.common.MyConstants;
 import com.github.paicoding.forum.core.permission.UserRole;
 import com.github.paicoding.forum.core.util.NumUtil;
@@ -87,6 +88,12 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
                 } else {
                     articleId = updateArticle(article, content, req.getTagIds());
                     redisTemplate.delete(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
+
+                    // 需要更新redis的zset缓存，而不能直接删除
+                    redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + article.getCategoryId(), articleId.toString(), article.getUpdateTime().getTime());
+
+                    // 直接删除文章，后续直接重新加载
+                    OHCacheConfig.ARTICLE_INFO.remove(MyConstants.OHC_ARTICLE_INFO_PROFILE+articleId);
                     log.info("文章更新成功！ title={}", article.getTitle());
                 }
                 return articleId;
@@ -186,7 +193,16 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
         if (dto != null && dto.getDeleted() != YesOrNoEnum.YES.getCode()) {
             dto.setDeleted(YesOrNoEnum.YES.getCode());
             articleDao.updateById(dto);
+            // 删除缓存中的文章内容
             redisTemplate.delete(MyConstants.ARTICLE_CONTENT_PROFILE + articleId);
+
+            // 删除网站首页排序，关于该文章的zset缓存
+            Long categoryId = dto.getCategoryId();
+            String tempCategoryId = categoryId == null ? "all" : categoryId.toString();
+            redisTemplate.opsForZSet().remove(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, articleId);
+
+            // 删除网站首页中，存储文章的OHC缓存。
+            OHCacheConfig.ARTICLE_INFO.remove(MyConstants.OHC_ARTICLE_INFO_PROFILE+articleId);
 
             // 发布文章删除事件
             SpringUtil.publishEvent(new ArticleMsgEvent<>(this, ArticleEventEnum.DELETE, dto));

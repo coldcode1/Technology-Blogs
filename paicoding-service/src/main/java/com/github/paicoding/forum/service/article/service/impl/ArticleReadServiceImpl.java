@@ -167,7 +167,7 @@ public class ArticleReadServiceImpl implements ArticleReadService {
         List<ArticleDO> articleDOS = articleDao.listArticleByIds(missIds);
         List<ArticleDTO> missResult = articleDOS.stream().map(this::fillArticleRelatedInfo).collect(Collectors.toList());
         for (ArticleDTO articleDTO : missResult) {
-            OHCacheConfig.ARTICLE_INFO.put(MyConstants.ARTICLE_INFO_PROFILE+articleDTO.getArticleId(), articleDTO);
+            OHCacheConfig.ARTICLE_INFO.put(MyConstants.OHC_ARTICLE_INFO_PROFILE +articleDTO.getArticleId(), articleDTO);
             // 阅读计数统计---通过redis存储
             articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
         }
@@ -193,7 +193,7 @@ public class ArticleReadServiceImpl implements ArticleReadService {
                 List<ArticleDTO> result = Lists.newArrayListWithCapacity(ids.size());
                 List<Long> missIds = new ArrayList<>();
                 for (Long articlesId : ids) {
-                    ArticleDTO articleDTO = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articlesId);
+                    ArticleDTO articleDTO = OHCacheConfig.ARTICLE_INFO.get(MyConstants.OHC_ARTICLE_INFO_PROFILE + articlesId);
                     if(articleDTO != null){
                         articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
                         result.add(articleDTO);
@@ -221,9 +221,9 @@ public class ArticleReadServiceImpl implements ArticleReadService {
 
         List<ArticleDTO> result = records.stream().map(this::fillArticleRelatedInfoV2).collect(Collectors.toList());
         for (ArticleDTO articleDTO : result) {
-            OHCacheConfig.ARTICLE_INFO.put(MyConstants.ARTICLE_INFO_PROFILE+articleDTO.getArticleId(), articleDTO);
+            OHCacheConfig.ARTICLE_INFO.put(MyConstants.OHC_ARTICLE_INFO_PROFILE +articleDTO.getArticleId(), articleDTO);
 
-            ArticleDTO articleDTO1 = OHCacheConfig.ARTICLE_INFO.get(MyConstants.ARTICLE_INFO_PROFILE + articleDTO.getArticleId());
+            ArticleDTO articleDTO1 = OHCacheConfig.ARTICLE_INFO.get(MyConstants.OHC_ARTICLE_INFO_PROFILE + articleDTO.getArticleId());
             log.info("articleDTO1:{}", JsonUtil.toStr(articleDTO1));
             // 阅读计数统计---通过redis存储
             articleDTO.setCount(countService.queryArticleStatisticInfo(articleDTO.getArticleId()));
