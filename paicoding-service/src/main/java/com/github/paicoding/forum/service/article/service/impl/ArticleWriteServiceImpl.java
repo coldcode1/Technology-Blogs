@@ -1,5 +1,6 @@
 package com.github.paicoding.forum.service.article.service.impl;
 
+import com.github.houbb.heaven.util.time.Time;
 import com.github.paicoding.forum.api.model.context.ReqInfoContext;
 import com.github.paicoding.forum.api.model.enums.*;
 import com.github.paicoding.forum.api.model.event.ArticleMsgEvent;
@@ -30,6 +31,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
@@ -85,9 +87,7 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
 
                 if (NumUtil.nullOrZero(req.getArticleId())) {
                     articleId = insertArticle(article, content, req.getTagIds());
-                    log.info("检查{}", articleId.toString());
-                    log.info("aaaa{}",article.getCategoryId().toString());
-                    redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + article.getCategoryId(), articleId.toString(), article.getUpdateTime().getTime());
+                    redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + article.getCategoryId(), articleId.toString(), System.currentTimeMillis());
                     log.info("文章发布成功! title={}", req.getTitle());
                 } else {
                     articleId = updateArticle(article, content, req.getTagIds());
@@ -100,6 +100,8 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
                     OHCacheConfig.ARTICLE_INFO.remove(MyConstants.OHC_ARTICLE_INFO_PROFILE+articleId);
                     log.info("文章更新成功！ title={}", article.getTitle());
                 }
+                // 所有类别的redis的zset数据结构，都需要进行更新
+                redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + "0", articleId.toString(), System.currentTimeMillis());
                 return articleId;
             }
         });
@@ -202,8 +204,9 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
 
             // 删除网站首页排序，关于该文章的zset缓存
             Long categoryId = dto.getCategoryId();
-            String tempCategoryId = categoryId == null ? "all" : categoryId.toString();
+            String tempCategoryId = categoryId == null ? "0" : categoryId.toString();
             redisTemplate.opsForZSet().remove(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, articleId.toString());
+            redisTemplate.opsForZSet().remove(MyConstants.ARTICLE_LIST_PROFILE + "0", articleId.toString());
 
             // 删除网站首页中，存储文章的OHC缓存。
             OHCacheConfig.ARTICLE_INFO.remove(MyConstants.OHC_ARTICLE_INFO_PROFILE+articleId);
