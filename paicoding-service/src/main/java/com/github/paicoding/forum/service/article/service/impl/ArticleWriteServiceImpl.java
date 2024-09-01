@@ -82,8 +82,12 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
             @Override
             public Long doInTransaction(TransactionStatus status) {
                 Long articleId;
+
                 if (NumUtil.nullOrZero(req.getArticleId())) {
                     articleId = insertArticle(article, content, req.getTagIds());
+                    log.info("检查{}", articleId.toString());
+                    log.info("aaaa{}",article.getCategoryId().toString());
+                    redisTemplate.opsForZSet().add(MyConstants.ARTICLE_LIST_PROFILE + article.getCategoryId(), articleId.toString(), article.getUpdateTime().getTime());
                     log.info("文章发布成功! title={}", req.getTitle());
                 } else {
                     articleId = updateArticle(article, content, req.getTagIds());
@@ -199,7 +203,7 @@ public class ArticleWriteServiceImpl implements ArticleWriteService {
             // 删除网站首页排序，关于该文章的zset缓存
             Long categoryId = dto.getCategoryId();
             String tempCategoryId = categoryId == null ? "all" : categoryId.toString();
-            redisTemplate.opsForZSet().remove(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, articleId);
+            redisTemplate.opsForZSet().remove(MyConstants.ARTICLE_LIST_PROFILE + tempCategoryId, articleId.toString());
 
             // 删除网站首页中，存储文章的OHC缓存。
             OHCacheConfig.ARTICLE_INFO.remove(MyConstants.OHC_ARTICLE_INFO_PROFILE+articleId);
