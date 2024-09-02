@@ -38,7 +38,6 @@ public interface RabbitmqService {
      * @param message
      */
     void publishMailerMsg(String exchange,
-                          BuiltinExchangeType exchangeType,
                           String toutingKey,
                           MailBO mailBO);
 

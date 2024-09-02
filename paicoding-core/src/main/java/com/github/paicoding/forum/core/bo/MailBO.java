@@ -1,10 +1,14 @@
 package com.github.paicoding.forum.core.bo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class MailBO {
     /**
      * 目标邮箱地址
@@ -26,13 +30,4 @@ public class MailBO {
      */
     private String msgId;
 
-    @Override
-    public String toString() {
-        return "Mail{" +
-                "to='" + to + '\'' +
-                ", title='" + title + '\'' +
-                ", content='" + content + '\'' +
-                ", msgId='" + msgId + '\'' +
-                '}';
-    }
 }

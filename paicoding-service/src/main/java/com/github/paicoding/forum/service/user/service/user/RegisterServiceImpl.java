@@ -110,24 +110,29 @@ public class RegisterServiceImpl implements RegisterService {
             return "用户已存在";
         }
 
-        if(redisTemplate.opsForValue().get(remoteAddr+ userName)!=null){
-            return "验证码已发送过啦，1分钟后重试。";
+        String s = redisTemplate.opsForValue().get(remoteAddr + "send_count");
+        int sendCount = s==null? 0: Integer.parseInt(s);
+        if(sendCount > 2){
+            return "验证码发送过多，请等待3分钟后重试。";
         }
 
         String trueCode = generateCode(6);
         String title = "欢迎注册技术博客园";
-        String content = "您的验证码是："+ trueCode + " . 欢迎帅气美丽的你注册技术博客园,,输入验证码,便可成为尊敬的技术博客大王~一起在技术博客园里发展自己的技术吧~";
+        String content = "您的验证码是："+ trueCode + " . 欢迎帅气美丽的你注册技术博客园,,输入验证码,便可成为尊敬的技术博客大王~~ 一起在技术博客园里发展自己的技术吧~";
 
         // 发送验证码
         if(rabbitmqProperties.getSwitchFlag()){
             String maidId = UUID.randomUUID().toString().replaceAll("-", "");
             MailBO mailBO = MailBO.builder().to(email).title(title).content(content).msgId(maidId).build();
-            rabbitmqService.publishMailerMsg(CommonConstants.EXCHANGE_EMAIL_DIRECT, BuiltinExchangeType.DIRECT, CommonConstants.QUERE_KEY_EMAIL, mailBO);
+            rabbitmqService.publishMailerMsg(CommonConstants.EXCHANGE_EMAIL_DIRECT, CommonConstants.QUERE_KEY_EMAIL, mailBO);
         } else if (!EmailUtil.sendMailByRabbitMQ(title,email,content)) {
             return "验证码发送失败";
         }
+        // 更新最后一次验证码 3min 有效
+        redisTemplate.opsForValue().set(remoteAddr+ userName, trueCode, 160, TimeUnit.SECONDS);
 
-        redisTemplate.opsForValue().set(remoteAddr+ userName, trueCode, 60, TimeUnit.SECONDS);
+        // 记录该ip发送的次数
+        redisTemplate.opsForValue().set(remoteAddr + "send_count", String.valueOf(sendCount+1), 300, TimeUnit.SECONDS);
         return "ok";
     }
 

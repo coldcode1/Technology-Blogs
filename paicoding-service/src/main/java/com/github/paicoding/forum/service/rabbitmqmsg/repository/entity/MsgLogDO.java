@@ -1,6 +1,5 @@
 package com.github.paicoding.forum.service.rabbitmqmsg.repository.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -11,7 +10,7 @@ import java.util.Date;
 @TableName("msg_log")
 public class MsgLogDO {
 
-    @TableId(value = "msgId")
+    @TableId(value = "msg_id")
     private String msgId;
 
     private String msg;

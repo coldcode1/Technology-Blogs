@@ -1,19 +1,25 @@
 package com.github.paicoding.forum.web.hook.listener;
 
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;
+import com.github.paicoding.forum.core.bo.MailBO;
 import com.github.paicoding.forum.core.cache.RedisClient;
 import com.github.paicoding.forum.core.common.CommonConstants;
+import com.github.paicoding.forum.core.common.MsgLogStatuesConstants;
 import com.github.paicoding.forum.core.config.RabbitmqProperties;
 import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnection;
 import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnectionPool;
+import com.github.paicoding.forum.core.util.EmailUtil;
 import com.github.paicoding.forum.core.util.JsonUtil;
 import com.github.paicoding.forum.service.notify.service.NotifyService;
+import com.github.paicoding.forum.service.rabbitmqmsg.repository.entity.MsgLogDO;
+import com.github.paicoding.forum.service.rabbitmqmsg.service.MsgLogService;
 import com.github.paicoding.forum.service.statistics.constants.CountConstants;
 import com.github.paicoding.forum.service.user.repository.entity.UserFootDO;
 import com.rabbitmq.client.BuiltinExchangeType;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.messaging.handler.annotation.Header;
@@ -33,6 +39,9 @@ public class RabbimqListener {
 
     @Autowired
     private RabbitmqProperties rabbitmqProperties;
+
+    @Autowired
+    private MsgLogService msgLogService;
 
     @PostConstruct
     private void init() throws IOException, InterruptedException, TimeoutException {
@@ -84,9 +93,26 @@ public class RabbimqListener {
     }
 
     @RabbitListener(queues = CommonConstants.QUERE_NAME_EMAIL)
-    public void sendEmail(String message) {
+    public void rabbitmqSendEmail(String message, Channel channel,  @Header(AmqpHeaders.DELIVERY_TAG) long deliveryTag) throws IOException {
         log.info("Consumer msg: {}", message);
-        UserFootDO obj = JsonUtil.toObj(message, UserFootDO.class);
+        MailBO mailBO = JsonUtil.toObj(message, MailBO.class);
+        MsgLogDO msgLogDO = msgLogService.queryByMsgId(mailBO.getMsgId());
+        log.info("msgLogDO:{}", msgLogDO);
+        if(msgLogDO ==null || msgLogDO.getStatus().equals(MsgLogStatuesConstants.SUCCESS)){
+            log.info("信息已经消费过");
+            return;
+        }
+        if(EmailUtil.sendMail(mailBO.getTitle(), mailBO.getTo(), mailBO.getContent())){
+            log.info("成功发送邮件");
+            msgLogService.updateStatusByMsgId(mailBO.getMsgId(), MsgLogStatuesConstants.SUCCESS);
+            // ack是必需的，因为设置了消息持久化，如果不啊ack，会导致消息堆积。
+            channel.basicAck(deliveryTag, false);
+        }else {
+            log.info("发送邮件失败, 交由定时任务重试");
+            msgLogService.updateStatusByMsgId(mailBO.getMsgId(), MsgLogStatuesConstants.FAIL);
+            // Nack也是必需的，因为设置了消息持久化，
+            channel.basicNack(deliveryTag, false, false);
+        }
     }
 
 }

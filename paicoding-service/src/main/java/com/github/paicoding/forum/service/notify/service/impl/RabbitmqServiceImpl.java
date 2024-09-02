@@ -59,14 +59,10 @@ public class RabbitmqServiceImpl implements RabbitmqService {
     }
 
     public void publishMailerMsg(String exchange,
-                                 BuiltinExchangeType exchangeType,
                                  String routingKey,
                                  MailBO mailBO) {
 
         String message = JsonUtil.toStr(mailBO);
-
-        // 存储于数据库中。保证唯一索引。
-        msgLogService.saveMsgLog(mailBO.getMsgId(), CommonConstants.EXCHANGE_EMAIL_DIRECT, CommonConstants.QUERE_KEY_EMAIL, message, MsgLogStatuesConstants.WAIT);
 
         // 最多重试2次
         int retryCount = 0;
@@ -91,6 +87,8 @@ public class RabbitmqServiceImpl implements RabbitmqService {
                 // 等待确认消息发布成功
                 if (channel.waitForConfirms()) {
                     log.info("Message publish confirmed");
+                    // 存储于数据库中。保证唯一索引。
+                    msgLogService.saveMsgLog(mailBO.getMsgId(), CommonConstants.EXCHANGE_EMAIL_DIRECT, CommonConstants.QUERE_KEY_EMAIL, message, MsgLogStatuesConstants.WAIT);
                     isOk = true;
                 } else {
                     log.error("Message publish failed");
@@ -104,7 +102,7 @@ public class RabbitmqServiceImpl implements RabbitmqService {
         if (!isOk) {
             log.error("Failed to publish message after {} retries", maxRetryCount);
             // todo 更新数据库设置为失败，交给定时任务处理
-            msgLogService.updateStatus(message, MsgLogStatuesConstants.FAIL);
+            msgLogService.updateStatusByMsgId(message, MsgLogStatuesConstants.FAIL);
         }
     }
 
