@@ -1,5 +1,6 @@
 package com.github.paicoding.forum.service.notify.service;
 
+import com.github.paicoding.forum.core.bo.MailBO;
 import com.rabbitmq.client.BuiltinExchangeType;
 
 import java.io.IOException;
@@ -27,6 +28,19 @@ public interface RabbitmqService {
                     BuiltinExchangeType exchangeType,
                     String toutingKey,
                     String message) throws IOException, TimeoutException;
+
+    /**
+     * 发布邮件的信息
+     *
+     * @param exchange
+     * @param exchangeType
+     * @param toutingKey
+     * @param message
+     */
+    void publishMailerMsg(String exchange,
+                          BuiltinExchangeType exchangeType,
+                          String toutingKey,
+                          MailBO mailBO);
 
     /**
      * 消费消息

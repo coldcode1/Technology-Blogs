@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.service.notify.service.impl;
+package com.github.paicoding.forum.web.hook.listener;
 
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;
 import com.github.paicoding.forum.core.cache.RedisClient;
@@ -8,7 +8,6 @@ import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnection;
 import com.github.paicoding.forum.core.rabbitmq.RabbitmqConnectionPool;
 import com.github.paicoding.forum.core.util.JsonUtil;
 import com.github.paicoding.forum.service.notify.service.NotifyService;
-import com.github.paicoding.forum.service.notify.service.RabbitmqService;
 import com.github.paicoding.forum.service.statistics.constants.CountConstants;
 import com.github.paicoding.forum.service.user.repository.entity.UserFootDO;
 import com.rabbitmq.client.BuiltinExchangeType;
@@ -21,7 +20,6 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
@@ -49,9 +47,15 @@ public class RabbimqListener {
         RabbitmqConnection connection = RabbitmqConnectionPool.getConnection();
         Channel channel = connection.getConnection().createChannel();
 
-        channel.exchangeDeclare(CommonConstants.EXCHANGE_NAME_TOPIC, BuiltinExchangeType.TOPIC, true, false, null);
+        // 声明文章点赞、收藏通知的交换机和队列
+        channel.exchangeDeclare(CommonConstants.EXCHANGE_NOTIFY_TOPIC, BuiltinExchangeType.TOPIC, true, false, null);
         channel.queueDeclare(CommonConstants.QUERE_NAME_NOTIFY, true, false, false, null);
-        channel.queueBind(CommonConstants.QUERE_NAME_NOTIFY, CommonConstants.EXCHANGE_NAME_TOPIC, CommonConstants.QUERE_KEY_NOTIFY);
+        channel.queueBind(CommonConstants.QUERE_NAME_NOTIFY, CommonConstants.EXCHANGE_NOTIFY_TOPIC, CommonConstants.QUERE_KEY_NOTIFY);
+
+        // 声明邮件注册的
+        channel.exchangeDeclare(CommonConstants.EXCHANGE_EMAIL_DIRECT, BuiltinExchangeType.DIRECT, true, false, null);
+        channel.queueDeclare(CommonConstants.QUERE_NAME_EMAIL, true, false, false, null);
+        channel.queueBind(CommonConstants.QUERE_NAME_EMAIL, CommonConstants.EXCHANGE_EMAIL_DIRECT, CommonConstants.QUERE_KEY_EMAIL);
 
         channel.close();
 
@@ -77,6 +81,12 @@ public class RabbimqListener {
         } catch (Exception e) {
             log.info("错误信息:{}", e.getMessage());
         }
+    }
+
+    @RabbitListener(queues = CommonConstants.QUERE_NAME_EMAIL)
+    public void sendEmail(String message) {
+        log.info("Consumer msg: {}", message);
+        UserFootDO obj = JsonUtil.toObj(message, UserFootDO.class);
     }
 
 }

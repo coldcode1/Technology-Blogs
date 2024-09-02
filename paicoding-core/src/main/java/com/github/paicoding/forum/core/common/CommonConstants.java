@@ -17,16 +17,20 @@ public class CommonConstants {
      * 消息队列
      */
     public final static String EXCHANGE_NAME_DIRECT = "direct.exchange";
-    public final static String EXCHANGE_NAME_TOPIC = "topic.notify";
 
+    // 实现点赞、收藏的通知队列
+    public final static String EXCHANGE_NOTIFY_TOPIC = "topic.notify";
     public final static String QUERE_KEY_PRAISE = "notify.praise";
-    public final static String QUERE_NAME_PRAISE = "quere.praise";
-
     public final static String QUERE_KEY_COLLECT = "notify.collect";
-    public final static String QUERE_NAME_COLLECT = "quere.collect";
-
     public final static String QUERE_KEY_NOTIFY = "notify.*";
     public final static String QUERE_NAME_NOTIFY = "quere.notify";
+
+
+
+    // 实现邮件注册的通知队列
+    public final static String EXCHANGE_EMAIL_DIRECT = "direct.email";
+    public final static String QUERE_KEY_EMAIL = "email";
+    public final static String QUERE_NAME_EMAIL = "quere.email";
 
     /**
      * 分类类型

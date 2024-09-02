@@ -4,9 +4,14 @@ import com.github.paicoding.forum.api.model.context.ReqInfoContext;
 import com.github.paicoding.forum.api.model.enums.NotifyTypeEnum;
 import com.github.paicoding.forum.api.model.enums.user.LoginTypeEnum;
 import com.github.paicoding.forum.api.model.vo.notify.NotifyMsgEvent;
-import com.github.paicoding.forum.core.util.EmailUtil;
-import com.github.paicoding.forum.core.util.SpringUtil;
-import com.github.paicoding.forum.core.util.TransactionUtil;
+import com.github.paicoding.forum.core.bo.MailBO;
+import com.github.paicoding.forum.core.common.CommonConstants;
+import com.github.paicoding.forum.core.common.MsgLogStatuesConstants;
+import com.github.paicoding.forum.core.common.MyConstants;
+import com.github.paicoding.forum.core.config.RabbitmqProperties;
+import com.github.paicoding.forum.core.util.*;
+import com.github.paicoding.forum.service.notify.service.RabbitmqService;
+import com.github.paicoding.forum.service.rabbitmqmsg.service.MsgLogService;
 import com.github.paicoding.forum.service.user.converter.UserAiConverter;
 import com.github.paicoding.forum.service.user.help.UserSessionHelper;
 import com.github.paicoding.forum.service.user.repository.dao.UserAiDao;
@@ -17,6 +22,7 @@ import com.github.paicoding.forum.service.user.repository.entity.UserInfoDO;
 import com.github.paicoding.forum.service.user.service.RegisterService;
 import com.github.paicoding.forum.service.user.help.UserPwdEncoder;
 import com.github.paicoding.forum.service.user.help.UserRandomGenHelper;
+import com.rabbitmq.client.BuiltinExchangeType;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,6 +60,15 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
+
+    @Autowired
+    private RabbitmqProperties rabbitmqProperties;
+
+    @Autowired
+    private RabbitmqService rabbitmqService;
+
+    @Autowired
+    private MsgLogService msgLogService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -102,10 +118,15 @@ public class RegisterServiceImpl implements RegisterService {
         String title = "欢迎注册技术博客园";
         String content = "您的验证码是："+ trueCode + " . 欢迎帅气美丽的你注册技术博客园,,输入验证码,便可成为尊敬的技术博客大王~一起在技术博客园里发展自己的技术吧~";
 
-        // 发生验证码
-        if(!EmailUtil.sendMailByRabbitMQ(title,email,content)){
+        // 发送验证码
+        if(rabbitmqProperties.getSwitchFlag()){
+            String maidId = UUID.randomUUID().toString().replaceAll("-", "");
+            MailBO mailBO = MailBO.builder().to(email).title(title).content(content).msgId(maidId).build();
+            rabbitmqService.publishMailerMsg(CommonConstants.EXCHANGE_EMAIL_DIRECT, BuiltinExchangeType.DIRECT, CommonConstants.QUERE_KEY_EMAIL, mailBO);
+        } else if (!EmailUtil.sendMailByRabbitMQ(title,email,content)) {
             return "验证码发送失败";
         }
+
         redisTemplate.opsForValue().set(remoteAddr+ userName, trueCode, 60, TimeUnit.SECONDS);
         return "ok";
     }

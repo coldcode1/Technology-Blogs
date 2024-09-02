@@ -221,13 +221,13 @@ public class ArticleRestController {
         // 做了两件事：1.发送信息，通知作者，存储了notifyMsgDao。 2.对文章的点赞、收藏数进行更新
         if (notifyType.equals(NotifyTypeEnum.PRAISE)  && rabbitmqProperties.getSwitchFlag()) {
             rabbitmqService.publishMsg(
-                    CommonConstants.EXCHANGE_NAME_TOPIC,
+                    CommonConstants.EXCHANGE_NOTIFY_TOPIC,
                     BuiltinExchangeType.TOPIC,
                     CommonConstants.QUERE_KEY_PRAISE,
                     JsonUtil.toStr(foot));
         } else if (notifyType.equals(NotifyTypeEnum.COLLECT) && rabbitmqProperties.getSwitchFlag()){
             rabbitmqService.publishMsg(
-                    CommonConstants.EXCHANGE_NAME_TOPIC,
+                    CommonConstants.EXCHANGE_NOTIFY_TOPIC,
                     BuiltinExchangeType.TOPIC,
                     CommonConstants.QUERE_KEY_COLLECT,
                     JsonUtil.toStr(foot));
