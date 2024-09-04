@@ -182,7 +182,7 @@ public class ArticleDao extends ServiceImpl<ArticleMapper, ArticleDO> {
 
         // todo： 不同categoryId的ZSet，以文章id为key，更新时间为score
         // todo 缓存一致性的保证：
-            // 1.更新文章后，直接更新redis，删除OHC，同时发送RabbitMQ
+            // 1.更新文章后，更新redis，并且删除OHC，同时发送RabbitMQ
             // 2.删除文章后，直接删除对应redis及OHC.
 
         if (categoryId != null && categoryId <= 0) {

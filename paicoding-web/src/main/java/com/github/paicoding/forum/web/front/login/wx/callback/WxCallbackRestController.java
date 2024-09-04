@@ -60,6 +60,8 @@ public class WxCallbackRestController {
             produces = "application/xml;charset=utf-8")
     public BaseWxMsgResVo callBack(@RequestBody WxTxtMsgReqVo msg) {
         String content = msg.getContent();
+
+        // 下面的逻辑不走！！！
         if ("subscribe".equals(msg.getEvent()) || "scan".equalsIgnoreCase(msg.getEvent())) {
             String key = msg.getEventKey();
             if (StringUtils.isNotBlank(key) || key.startsWith("qrscene_")) {

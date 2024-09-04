@@ -69,6 +69,7 @@ public class WxAckHelper {
         }
         // 微信公众号登录
         else if (CodeGenerateUtil.isVerifyCode(content)) {
+            // 在这里自动注册了一个用户user
             sessionService.autoRegisterWxUserInfo(fromUser);
             if (qrLoginHelper.login(content)) {
                 textRes = "登录成功，开始愉快的玩耍吧！";

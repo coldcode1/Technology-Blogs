@@ -28,7 +28,7 @@ public class CodeGenerateUtil {
                 // 100-200之间的数字作为关键词回复，不用于验证码
                 return genCode(cnt);
             }
-            return String.format("%0" + CODE_LEN + "d", num);
+            return String.format("%03d", num);
         } else {
             return specialCodes.get(cnt);
         }

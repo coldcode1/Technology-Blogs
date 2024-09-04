@@ -67,10 +67,13 @@ public class WxLoginHelper {
      */
     public SseEmitter subscribe() throws IOException {
         String deviceId = ReqInfoContext.getReqInfo().getDeviceId();
+        // getUnchecked 当缓存中不存在时，会自动调用 load 方法
         String realCode = deviceCodeCache.getUnchecked(deviceId) ;
         // fixme 设置15min的超时时间, 超时时间一旦设置不能修改；因此导致刷新验证码并不会增加连接的有效期
         SseEmitter sseEmitter = new SseEmitter(SSE_EXPIRE_TIME);
         SseEmitter oldSse = verifyCodeCache.getIfPresent(realCode);
+
+        // 关闭旧连接，防止具有相同验证码的长连接对。
         if (oldSse != null) {
             oldSse.complete();
         }
@@ -140,7 +143,7 @@ public class WxLoginHelper {
      * @return
      */
     public boolean login(String verifyCode) {
-        // 通过验证码找到对应的长连接
+        // 通过验证码找到对应的长连接，实际上是通过半场连接去验证，验证码是否正确的。
         SseEmitter sseEmitter = verifyCodeCache.getIfPresent(verifyCode);
         if (sseEmitter == null) {
             return false;
